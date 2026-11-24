@@ -1,0 +1,405 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "TutoMind API",
+    "version": "0.1.0",
+    "description": "Contrato compartido entre Frontend (Next.js) y Backend (FastAPI). Fuente única de verdad para los tipos."
+  },
+  "servers": [{ "url": "http://localhost:8000", "description": "Desarrollo local" }],
+  "tags": [
+    { "name": "auth" },
+    { "name": "documents" },
+    { "name": "tutor" },
+    { "name": "analytics" }
+  ],
+  "security": [{ "bearerAuth": [] }],
+  "paths": {
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": ["auth"],
+        "operationId": "login",
+        "summary": "Iniciar sesión",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/LoginRequest" } } }
+        },
+        "responses": {
+          "200": {
+            "description": "Sesión creada",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/LoginResponse" } } }
+          },
+          "401": { "$ref": "#/components/responses/Error" },
+          "422": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/api/v1/courses/{course_id}/documents": {
+      "post": {
+        "tags": ["documents"],
+        "operationId": "uploadCourseDocument",
+        "summary": "Subir documento del curso (PDF, DOCX, PPTX) para indexación RAG",
+        "description": "Solo rol `teacher`.",
+        "parameters": [{ "$ref": "#/components/parameters/CourseId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["file"],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Archivo PDF, DOCX o PPTX",
+                    "contentMediaType": "application/octet-stream"
+                  },
+                  "title": { "type": "string", "maxLength": 200 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Documento recibido; la indexación es asíncrona",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DocumentUploadResponse" } } }
+          },
+          "401": { "$ref": "#/components/responses/Error" },
+          "403": { "$ref": "#/components/responses/Error" },
+          "413": { "$ref": "#/components/responses/Error" },
+          "415": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/api/v1/tutor/chat/stream": {
+      "post": {
+        "tags": ["tutor"],
+        "operationId": "streamTutorChat",
+        "summary": "Chat con el tutor (streaming SSE)",
+        "description": "Devuelve `text/event-stream`. Cada evento `data:` contiene un `TutorStreamEvent` en JSON. El contenido de `token` es Markdown con LaTeX (`$inline$`, `$$block$$`) y bloques de código.",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TutorChatRequest" } } }
+        },
+        "responses": {
+          "200": {
+            "description": "Flujo de eventos del tutor",
+            "content": {
+              "text/event-stream": {
+                "schema": { "$ref": "#/components/schemas/TutorStreamEvent" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Error" },
+          "422": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/api/v1/analytics/courses/{course_id}/risk": {
+      "get": {
+        "tags": ["analytics"],
+        "operationId": "getCourseRisk",
+        "summary": "Riesgo académico por estudiante con explicabilidad (XAI)",
+        "description": "Solo rol `teacher`.",
+        "parameters": [
+          { "$ref": "#/components/parameters/CourseId" },
+          {
+            "name": "level",
+            "in": "query",
+            "required": false,
+            "schema": { "$ref": "#/components/schemas/RiskLevel" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de estudiantes con su riesgo",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CourseRiskResponse" } } }
+          },
+          "401": { "$ref": "#/components/responses/Error" },
+          "403": { "$ref": "#/components/responses/Error" },
+          "404": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/api/v1/analytics/courses/{course_id}/topics": {
+      "get": {
+        "tags": ["analytics"],
+        "operationId": "getCourseTopics",
+        "summary": "Temas más consultados y alertas de confusión",
+        "description": "Solo rol `teacher`.",
+        "parameters": [{ "$ref": "#/components/parameters/CourseId" }],
+        "responses": {
+          "200": {
+            "description": "Termómetro del aula",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CourseTopicsResponse" } } }
+          },
+          "401": { "$ref": "#/components/responses/Error" },
+          "403": { "$ref": "#/components/responses/Error" },
+          "404": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": { "type": "http", "scheme": "bearer", "bearerFormat": "JWT" }
+    },
+    "parameters": {
+      "CourseId": {
+        "name": "course_id",
+        "in": "path",
+        "required": true,
+        "schema": { "type": "string" },
+        "description": "ID del curso (corresponde al curso en Moodle)"
+      }
+    },
+    "responses": {
+      "Error": {
+        "description": "Error",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } }
+      }
+    },
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "required": ["code", "message"],
+        "properties": {
+          "code": { "type": "string", "examples": ["unauthorized"] },
+          "message": { "type": "string" },
+          "details": { "type": ["object", "null"], "additionalProperties": true }
+        }
+      },
+      "Role": { "type": "string", "enum": ["student", "teacher"] },
+      "User": {
+        "type": "object",
+        "required": ["id", "name", "email", "role"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "role": { "$ref": "#/components/schemas/Role" }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email": { "type": "string", "format": "email" },
+          "password": { "type": "string", "minLength": 8, "format": "password" },
+          "role": {
+            "$ref": "#/components/schemas/Role",
+            "description": "Solo para modo demo; en producción el rol lo determina Moodle."
+          }
+        }
+      },
+      "LoginResponse": {
+        "type": "object",
+        "required": ["access_token", "token_type", "expires_in", "user"],
+        "properties": {
+          "access_token": { "type": "string" },
+          "token_type": { "type": "string", "const": "bearer" },
+          "expires_in": { "type": "integer", "description": "Segundos hasta la expiración" },
+          "user": { "$ref": "#/components/schemas/User" }
+        }
+      },
+      "DocumentStatus": { "type": "string", "enum": ["queued", "processing", "indexed", "failed"] },
+      "DocumentUploadResponse": {
+        "type": "object",
+        "required": ["document_id", "course_id", "filename", "mime_type", "status"],
+        "properties": {
+          "document_id": { "type": "string" },
+          "course_id": { "type": "string" },
+          "filename": { "type": "string" },
+          "mime_type": {
+            "type": "string",
+            "enum": [
+              "application/pdf",
+              "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+              "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+            ]
+          },
+          "status": { "$ref": "#/components/schemas/DocumentStatus" }
+        }
+      },
+      "StudentLevel": { "type": "string", "enum": ["basic", "intermediate", "advanced"], "description": "básico / intermedio / avanzado" },
+      "ChatMessage": {
+        "type": "object",
+        "required": ["role", "content"],
+        "properties": {
+          "role": { "type": "string", "enum": ["user", "assistant"] },
+          "content": { "type": "string", "description": "Markdown con LaTeX y código" }
+        }
+      },
+      "TutorChatRequest": {
+        "type": "object",
+        "required": ["course_id", "messages", "student_level"],
+        "properties": {
+          "course_id": { "type": "string" },
+          "conversation_id": { "type": ["string", "null"], "description": "Omitir para iniciar una conversación nueva" },
+          "student_level": { "$ref": "#/components/schemas/StudentLevel" },
+          "messages": { "type": "array", "minItems": 1, "items": { "$ref": "#/components/schemas/ChatMessage" } },
+          "request_human_help": {
+            "type": "boolean",
+            "default": false,
+            "description": "El estudiante pide explícitamente escalar al docente"
+          }
+        }
+      },
+      "SourceCitation": {
+        "type": "object",
+        "required": ["document_id", "title"],
+        "properties": {
+          "document_id": { "type": "string" },
+          "title": { "type": "string" },
+          "page": { "type": ["integer", "null"] },
+          "moodle_url": { "type": ["string", "null"], "format": "uri" }
+        }
+      },
+      "FrustrationSignal": {
+        "type": "object",
+        "required": ["detected", "score"],
+        "properties": {
+          "detected": { "type": "boolean" },
+          "score": { "type": "number", "minimum": 0, "maximum": 1 },
+          "adapted_tone": { "type": "boolean", "description": "El tutor adaptó su tono" }
+        }
+      },
+      "EscalationSignal": {
+        "type": "object",
+        "required": ["suggested", "reason"],
+        "properties": {
+          "suggested": { "type": "boolean", "description": "Se sugiere o se ejecutó escalamiento a un humano" },
+          "reason": { "type": "string", "enum": ["student_requested", "persistent_frustration", "repeated_failure"] },
+          "ticket_id": { "type": ["string", "null"] }
+        }
+      },
+      "TutorStreamEvent": {
+        "description": "Evento SSE discriminado por `type`.",
+        "oneOf": [
+          {
+            "type": "object",
+            "required": ["type", "content"],
+            "properties": {
+              "type": { "const": "token" },
+              "content": { "type": "string", "description": "Fragmento Markdown/LaTeX/código" }
+            }
+          },
+          {
+            "type": "object",
+            "required": ["type", "sources"],
+            "properties": {
+              "type": { "const": "sources" },
+              "sources": { "type": "array", "items": { "$ref": "#/components/schemas/SourceCitation" } }
+            }
+          },
+          {
+            "type": "object",
+            "required": ["type", "frustration"],
+            "properties": {
+              "type": { "const": "frustration" },
+              "frustration": { "$ref": "#/components/schemas/FrustrationSignal" }
+            }
+          },
+          {
+            "type": "object",
+            "required": ["type", "escalation"],
+            "properties": {
+              "type": { "const": "escalation" },
+              "escalation": { "$ref": "#/components/schemas/EscalationSignal" }
+            }
+          },
+          {
+            "type": "object",
+            "required": ["type", "conversation_id"],
+            "properties": {
+              "type": { "const": "done" },
+              "conversation_id": { "type": "string" }
+            }
+          },
+          {
+            "type": "object",
+            "required": ["type", "code", "message"],
+            "properties": {
+              "type": { "const": "error" },
+              "code": { "type": "string" },
+              "message": { "type": "string" }
+            }
+          }
+        ],
+        "discriminator": { "propertyName": "type" }
+      },
+      "RiskLevel": { "type": "string", "enum": ["green", "yellow", "red"] },
+      "XaiFactor": {
+        "type": "object",
+        "required": ["key", "label", "impact", "value", "explanation"],
+        "properties": {
+          "key": { "type": "string", "examples": ["days_since_last_login"] },
+          "label": { "type": "string", "examples": ["Días sin ingresar a Moodle"] },
+          "impact": { "type": "number", "minimum": -1, "maximum": 1, "description": "Contribución al riesgo; positivo = aumenta el riesgo" },
+          "value": { "type": ["number", "string"], "description": "Valor observado" },
+          "explanation": { "type": "string", "description": "Explicación en lenguaje natural para el docente" }
+        }
+      },
+      "StudentRisk": {
+        "type": "object",
+        "required": ["student_id", "name", "risk_level", "risk_score", "projected_grade", "factors", "updated_at"],
+        "properties": {
+          "student_id": { "type": "string" },
+          "name": { "type": "string" },
+          "risk_level": { "$ref": "#/components/schemas/RiskLevel" },
+          "risk_score": { "type": "number", "minimum": 0, "maximum": 1 },
+          "projected_grade": { "type": "number", "description": "Nota proyectada" },
+          "grade_scale_max": { "type": "number", "default": 5 },
+          "factors": {
+            "type": "array",
+            "minItems": 1,
+            "description": "Factores XAI explícitos que justifican el nivel de riesgo",
+            "items": { "$ref": "#/components/schemas/XaiFactor" }
+          },
+          "updated_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "CourseRiskResponse": {
+        "type": "object",
+        "required": ["course_id", "summary", "students"],
+        "properties": {
+          "course_id": { "type": "string" },
+          "summary": {
+            "type": "object",
+            "required": ["green", "yellow", "red"],
+            "properties": {
+              "green": { "type": "integer", "minimum": 0 },
+              "yellow": { "type": "integer", "minimum": 0 },
+              "red": { "type": "integer", "minimum": 0 }
+            }
+          },
+          "students": { "type": "array", "items": { "$ref": "#/components/schemas/StudentRisk" } }
+        }
+      },
+      "TopicStat": {
+        "type": "object",
+        "required": ["topic", "question_count", "confusion_score", "confusion_alert"],
+        "properties": {
+          "topic": { "type": "string" },
+          "question_count": { "type": "integer", "minimum": 0 },
+          "unique_students": { "type": "integer", "minimum": 0 },
+          "confusion_score": { "type": "number", "minimum": 0, "maximum": 1 },
+          "confusion_alert": { "type": "boolean", "description": "true si la confusión grupal supera el umbral" },
+          "sample_questions": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "CourseTopicsResponse": {
+        "type": "object",
+        "required": ["course_id", "period_start", "period_end", "topics"],
+        "properties": {
+          "course_id": { "type": "string" },
+          "period_start": { "type": "string", "format": "date-time" },
+          "period_end": { "type": "string", "format": "date-time" },
+          "topics": { "type": "array", "items": { "$ref": "#/components/schemas/TopicStat" } }
+        }
+      }
+    }
+  }
+}

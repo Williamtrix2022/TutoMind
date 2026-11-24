@@ -1,0 +1,57 @@
+# ── Entorno y secretos ──
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# ── Node / Next.js ──
+node_modules/
+.next/
+out/
+.turbo/
+.vercel/
+next-env.d.ts
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+coverage/
+# PWA generado
+frontend/public/sw.js
+frontend/public/workbox-*.js
+frontend/public/swe-worker-*.js
+
+# ── Python / FastAPI ──
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.ipynb_checkpoints/
+backend/uploads/
+backend/storage/
+
+# ── Bases de datos locales ──
+*.sqlite3
+*.db
+
+# ── Editores y SO ──
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Claude Code (config local) ──
+.claude/settings.local.json
