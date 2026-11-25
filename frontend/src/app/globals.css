@@ -106,6 +106,64 @@ html.theme-transition *::after {
   }
 }
 
+/* Markdown de las respuestas del tutor */
+.prose-tutor {
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.prose-tutor > :first-child {
+  margin-top: 0;
+}
+.prose-tutor > :last-child {
+  margin-bottom: 0;
+}
+.prose-tutor p,
+.prose-tutor ul,
+.prose-tutor ol,
+.prose-tutor blockquote {
+  margin: 0.75rem 0;
+}
+.prose-tutor ul {
+  list-style: disc;
+  padding-left: 1.25rem;
+}
+.prose-tutor ol {
+  list-style: decimal;
+  padding-left: 1.25rem;
+}
+.prose-tutor li {
+  margin: 0.25rem 0;
+}
+.prose-tutor h1,
+.prose-tutor h2,
+.prose-tutor h3 {
+  margin: 1.25rem 0 0.5rem;
+  font-size: 1.0625rem;
+}
+.prose-tutor strong {
+  font-weight: 700;
+}
+.prose-tutor a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.prose-tutor blockquote {
+  border-left: 3px solid var(--color-glow);
+  padding-left: 1rem;
+  color: var(--fg-muted);
+}
+.prose-tutor :not(pre) > code {
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, var(--color-primary) 18%, transparent);
+  padding: 0.125rem 0.375rem;
+  font-size: 0.875em;
+}
+.prose-tutor pre code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
 /* Estilos de KaTeX para respuestas del tutor */
 .katex-display {
   overflow-x: auto;
