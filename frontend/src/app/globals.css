@@ -1,0 +1,112 @@
+@import "tailwindcss";
+
+/* Modo noche por defecto; el modo día se activa con data-theme="light". */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* ── Tokens de marca (CLAUDE.md) ── */
+@theme {
+  --color-night-canvas: #03174c;
+  --color-night-card: #0d256c;
+  --color-day-canvas: #f6f7fb;
+  --color-day-card: #ffffff;
+  --color-primary: #8e97fd;
+  --color-success: #6cb28e;
+  --color-warning: #fa6e5a;
+  --color-highlight: #ffcf86;
+  --color-glow: #d9a5b3;
+
+  --radius-3xl: 1.5rem; /* 24px */
+}
+
+/* ── Tokens semánticos que cambian con el tema ── */
+:root {
+  color-scheme: dark;
+  --canvas: #03174c;
+  --card: #0d256c;
+  --fg: #f6f7fb;
+  --fg-muted: rgb(246 247 251 / 0.68);
+  --line: rgb(255 255 255 / 0.1); /* border-white/10 */
+  --elev-card: 0 12px 40px -12px rgb(0 5 30 / 0.55);
+  --on-primary: #03174c;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --canvas: #f6f7fb;
+  --card: #ffffff;
+  --fg: #03174c;
+  --fg-muted: #55618f;
+  --line: rgb(226 232 240 / 0.8); /* border-slate-200/80 */
+  --elev-card: 0 12px 40px -16px rgb(13 37 108 / 0.18);
+  --on-primary: #03174c;
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-card: var(--card);
+  --color-fg: var(--fg);
+  --color-muted: var(--fg-muted);
+  --color-line: var(--line);
+  --color-on-primary: var(--on-primary);
+  --shadow-card: var(--elev-card);
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+  background: var(--canvas);
+}
+
+body {
+  background: var(--canvas);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overscroll-behavior-y: none;
+}
+
+/* Tipografía: tracking según tamaño (títulos cerrados, cuerpo neutro). */
+h1,
+h2,
+h3 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Transición suave entre temas (evita saltos bruscos de brillo). */
+html.theme-transition,
+html.theme-transition *,
+html.theme-transition *::before,
+html.theme-transition *::after {
+  transition:
+    background-color 350ms ease,
+    border-color 350ms ease,
+    color 350ms ease,
+    box-shadow 350ms ease !important;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .material {
+    backdrop-filter: none !important;
+    background: var(--card) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.theme-transition,
+  html.theme-transition * {
+    transition: none !important;
+  }
+}
+
+/* Estilos de KaTeX para respuestas del tutor */
+.katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
