@@ -2,7 +2,7 @@
 
 Plataforma web educativa (PWA) integrada con **Moodle** que combina tutoría personalizada mediante IA generativa (RAG sobre material docente) con detección temprana y explicable de riesgo académico.
 
-**Entrega: 30 de noviembre de 2026** · [Issues](../../issues) · [Milestones (sprints)](../../milestones) · [Contrato de API](docs/openapi.json)
+**Entrega: 30 de noviembre de 2026** · [📋 Estado del MVP](docs/TutoMind_Mvp.md) · [Issues](../../issues) · [Milestones (sprints)](../../milestones) · [Contrato de API](docs/openapi.json)
 
 ---
 
@@ -27,7 +27,7 @@ Plataforma web educativa (PWA) integrada con **Moodle** que combina tutoría per
 tutomind/
 ├── frontend/          # Next.js 15 + TypeScript + Tailwind + Motion (PWA)
 ├── backend/           # FastAPI + Python 3.12 + pgvector + Claude API
-├── docs/              # Contrato OpenAPI y diagramas de arquitectura
+├── docs/              # Contrato OpenAPI, estado del MVP (TutoMind_Mvp.md) y diagramas
 ├── .github/           # Plantillas de issues y pull requests
 ├── CLAUDE.md          # Reglas de arquitectura y diseño para Claude Code
 ├── CONTRIBUTING.md    # Flujo de trabajo del equipo

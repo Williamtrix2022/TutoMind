@@ -17,3 +17,4 @@ Closes #
 - [ ] Lint y build/tests pasan
 - [ ] Si toca la API, el contrato está actualizado y aprobado
 - [ ] Sin secretos ni `.env`
+- [ ] Actualicé `docs/TutoMind_Mvp.md` (fila de la tarea, matriz de integración y registro de cambios)

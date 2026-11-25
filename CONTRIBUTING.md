@@ -30,7 +30,10 @@ Nunca hagas push directo a `main` ni a `develop`.
 - [ ] Cumple los criterios de aceptación de la issue.
 - [ ] Frontend: `npm run lint` y `npm run build` pasan. Backend: tests y linter pasan.
 - [ ] Sin secretos en el código (usa `.env`, que está ignorado).
+- [ ] Actualicé [`docs/TutoMind_Mvp.md`](docs/TutoMind_Mvp.md) (fila de la tarea, matriz de integración y registro de cambios).
 - [ ] PR revisado por la otra persona.
+
+> Los PRs van a `develop` y GitHub solo cierra issues automáticamente al llegar a `main`: al fusionar, **cierra la issue a mano** y pasa su tarjeta del tablero a *Done*.
 
 ## Reuniones sugeridas
 - **Daily asíncrona** (5 min, por chat): qué hice, qué haré, qué me bloquea.
