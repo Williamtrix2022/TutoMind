@@ -36,7 +36,6 @@ export function TutorChat() {
 
   // Sigue la respuesta solo si la persona no se ha desplazado hacia arriba.
   const stickToBottom = useRef(true);
-  const bottom = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const onScroll = () => {
@@ -48,8 +47,9 @@ export function TutorChat() {
   }, []);
 
   useEffect(() => {
-    if (stickToBottom.current) bottom.current?.scrollIntoView({ block: "end" });
-  }, [messages]);
+    // Hasta el final real de la página: así el compositor "pegajoso" no tapa el último mensaje.
+    if (stickToBottom.current) window.scrollTo({ top: document.documentElement.scrollHeight });
+  }, [messages, frustration, escalation]);
 
   const isEmpty = messages.length === 0;
 
@@ -130,10 +130,10 @@ export function TutorChat() {
             ))}
           </div>
         )}
-        <div ref={bottom} className="h-px" />
       </div>
 
-      <div className="sticky bottom-[calc(6rem+env(safe-area-inset-bottom))] z-30 mt-6 md:bottom-4">
+      {/* Borde de scroll: el contenido se desvanece bajo el compositor en lugar de cortarse. */}
+      <div className="sticky bottom-[calc(6rem+env(safe-area-inset-bottom))] z-30 mt-6 bg-gradient-to-t from-canvas from-75% to-transparent pt-8 md:bottom-0 md:pb-4">
         <SupportBanner
           frustration={frustration}
           escalation={escalation}

@@ -16,7 +16,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <header className="flex items-center justify-between gap-3 px-4 pt-[max(1rem,env(safe-area-inset-top))] md:hidden">
         <Logo />
         <div className="flex items-center gap-2">
-          <RoleSwitcher className="w-48" />
+          <RoleSwitcher className="w-44 sm:w-52" />
           <ThemeToggle />
         </div>
       </header>

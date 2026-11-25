@@ -6,7 +6,7 @@ export function Logo() {
       <span className="grid size-10 place-items-center rounded-2xl bg-primary text-on-primary">
         <Moon className="size-5" aria-hidden />
       </span>
-      <span className="text-xl font-bold tracking-tight">TutoMind</span>
+      <span className="hidden text-xl font-bold tracking-tight sm:inline">TutoMind</span>
     </div>
   );
 }
