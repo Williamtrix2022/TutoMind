@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import type { Role, Theme } from "@/lib/types";
+import { MockGate } from "./mock-gate";
 
 interface AppState {
   theme: Theme;
@@ -75,7 +76,9 @@ export function AppProviders({ children }: { children: ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <MotionConfig reducedMotion="user">
-        <AppContext.Provider value={value}>{children}</AppContext.Provider>
+        <AppContext.Provider value={value}>
+          <MockGate>{children}</MockGate>
+        </AppContext.Provider>
       </MotionConfig>
     </QueryClientProvider>
   );
