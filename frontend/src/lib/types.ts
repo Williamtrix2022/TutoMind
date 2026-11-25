@@ -1,4 +1,9 @@
-/** Tipos base del contrato `docs/openapi.json`. Se reemplazarán por tipos generados. */
-export type Role = "student" | "teacher";
+import type { components } from "@/lib/api/schema";
+
+/** Tipos derivados del contrato `docs/openapi.json` (ver `npm run gen:api`). */
+export type Role = components["schemas"]["Role"];
+export type RiskLevel = components["schemas"]["RiskLevel"];
+export type StudentLevel = components["schemas"]["StudentLevel"];
+
+/** Solo de UI: no forma parte del contrato. */
 export type Theme = "dark" | "light";
-export type RiskLevel = "green" | "yellow" | "red";
