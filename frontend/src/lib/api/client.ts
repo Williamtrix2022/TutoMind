@@ -1,5 +1,6 @@
 import createClient from "openapi-fetch";
 import type { Middleware } from "openapi-fetch";
+import { notifyUnauthorized } from "./events";
 import type { paths } from "./schema";
 import { getToken } from "./token-store";
 
@@ -10,6 +11,11 @@ const withAuth: Middleware = {
     const token = getToken();
     if (token) request.headers.set("Authorization", `Bearer ${token}`);
     return request;
+  },
+  onResponse({ request, response }) {
+    // Un 401 en el login es "credenciales incorrectas", no sesión vencida.
+    if (response.status === 401 && !request.url.includes("/auth/login")) notifyUnauthorized();
+    return response;
   },
 };
 

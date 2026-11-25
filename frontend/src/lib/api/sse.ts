@@ -1,5 +1,6 @@
 import { API_BASE_URL } from "./client";
 import { ApiError, toApiError } from "./errors";
+import { notifyUnauthorized } from "./events";
 import type { components } from "./schema";
 import { getToken } from "./token-store";
 
@@ -36,6 +37,7 @@ export async function* streamTutorChat(
   });
 
   if (!response.ok || !response.body) {
+    if (response.status === 401) notifyUnauthorized();
     const payload: unknown = await response.json().catch(() => null);
     throw toApiError(payload, response.status);
   }

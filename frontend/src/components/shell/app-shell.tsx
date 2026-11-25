@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { LogoutButton } from "@/components/ui/logout-button";
 import { RoleSwitcher } from "@/components/ui/role-switcher";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { BottomBar } from "./bottom-bar";
@@ -18,6 +19,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="flex items-center gap-2">
           <RoleSwitcher className="w-44 sm:w-52" />
           <ThemeToggle />
+          <LogoutButton />
         </div>
       </header>
 
