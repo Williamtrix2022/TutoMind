@@ -71,6 +71,13 @@ function sseStream(request: Request, body: TutorChatRequest): ReadableStream<Uin
 export const handlers = [
   http.post("*/api/v1/auth/login", async ({ request }) => {
     const body = (await request.json()) as LoginRequest;
+    // Contraseña de prueba para ver el estado de error del formulario.
+    if (body.password === "incorrecta") {
+      return HttpResponse.json(
+        { code: "invalid_credentials", message: "Correo o contraseña incorrectos." },
+        { status: 401 },
+      );
+    }
     const role = body.role ?? "student";
     const response: LoginResponse = {
       access_token: `mock-token-${role}`,

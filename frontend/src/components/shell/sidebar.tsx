@@ -3,6 +3,7 @@
 import { motion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { LogoutButton } from "@/components/ui/logout-button";
 import { RoleSwitcher } from "@/components/ui/role-switcher";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useApp } from "@/lib/providers/app-providers";
@@ -12,7 +13,7 @@ import { NAV_BY_ROLE } from "./nav-items";
 
 /** Navegación de escritorio. */
 export function Sidebar() {
-  const { role } = useApp();
+  const { role, user } = useApp();
   const pathname = usePathname();
 
   return (
@@ -53,6 +54,15 @@ export function Sidebar() {
           <span className="text-sm font-medium text-muted">Apariencia</span>
           <ThemeToggle />
         </div>
+        {user && (
+          <div className="flex items-center justify-between gap-2 rounded-2xl border border-line bg-canvas p-2 pl-4">
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold">{user.name}</p>
+              <p className="truncate text-xs text-muted">{user.email}</p>
+            </div>
+            <LogoutButton className="size-10" />
+          </div>
+        )}
       </div>
     </aside>
   );
