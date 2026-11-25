@@ -75,9 +75,12 @@ h3 {
   line-height: 1.1;
 }
 
-:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
+/* En @layer base para que las utilidades (p. ej. outline-none) puedan sobrescribirlo. */
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
 }
 
 /* Transición suave entre temas (evita saltos bruscos de brillo). */

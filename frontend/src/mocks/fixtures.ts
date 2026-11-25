@@ -175,6 +175,9 @@ export const MOCK_TOPICS: CourseTopicsResponse = {
   ],
 };
 
+/** Respuesta corta cuando el estudiante pide ayuda humana. */
+export const MOCK_HELP_REPLY = "Listo, avisé a tu docente. Mientras tanto, puedo seguir contigo con un ejemplo más sencillo.";
+
 /** Respuesta del tutor con LaTeX y código, para probar el render. */
 export const MOCK_TUTOR_REPLY = `Vamos paso a paso. Piensa en la derivada de $f(x)=x^2$.
 

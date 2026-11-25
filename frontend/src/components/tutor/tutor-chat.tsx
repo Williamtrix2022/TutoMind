@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { RotateCcw } from "lucide-react";
+import { LifeBuoy, RotateCcw } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { DEMO_COURSE_ID } from "@/lib/config";
@@ -10,6 +10,7 @@ import { spring, tap } from "@/lib/motion";
 import type { StudentLevel } from "@/lib/types";
 import { ChatComposer } from "./chat-composer";
 import { MessageBubble } from "./message-bubble";
+import { SupportBanner } from "./support-banner";
 import { TutorOrb } from "./tutor-orb";
 
 const LEVELS: { value: StudentLevel; label: string }[] = [
@@ -26,11 +27,15 @@ const SUGGESTIONS = [
 
 export function TutorChat() {
   const [level, setLevel] = useState<StudentLevel>("basic");
-  const { messages, isStreaming, send, stop, reset } = useTutorChat({ courseId: DEMO_COURSE_ID, level });
+  const { messages, isStreaming, frustration, escalation, send, stop, requestHelp, reset } = useTutorChat({
+    courseId: DEMO_COURSE_ID,
+    level,
+  });
+  const calm = frustration?.detected === true;
+  const helpRequested = Boolean(escalation?.ticket_id);
 
   // Sigue la respuesta solo si la persona no se ha desplazado hacia arriba.
   const stickToBottom = useRef(true);
-  const bottom = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const onScroll = () => {
@@ -42,8 +47,9 @@ export function TutorChat() {
   }, []);
 
   useEffect(() => {
-    if (stickToBottom.current) bottom.current?.scrollIntoView({ block: "end" });
-  }, [messages]);
+    // Hasta el final real de la página: así el compositor "pegajoso" no tapa el último mensaje.
+    if (stickToBottom.current) window.scrollTo({ top: document.documentElement.scrollHeight });
+  }, [messages, frustration, escalation]);
 
   const isEmpty = messages.length === 0;
 
@@ -64,6 +70,20 @@ export function TutorChat() {
             options={LEVELS}
             className="w-full min-w-64 sm:w-auto"
           />
+          {!isEmpty && !helpRequested && (
+            <motion.button
+              type="button"
+              onClick={() => void requestHelp()}
+              disabled={isStreaming}
+              whileTap={tap}
+              transition={spring}
+              aria-label="Pedir ayuda al docente"
+              title="Pedir ayuda al docente"
+              className="grid size-11 shrink-0 place-items-center rounded-2xl border border-line bg-card text-muted shadow-card hover:text-fg disabled:opacity-50"
+            >
+              <LifeBuoy className="size-4" aria-hidden />
+            </motion.button>
+          )}
           {!isEmpty && (
             <motion.button
               type="button"
@@ -106,14 +126,20 @@ export function TutorChat() {
         ) : (
           <div role="log" aria-live="polite" aria-label="Conversación con el tutor" className="space-y-5">
             {messages.map((message) => (
-              <MessageBubble key={message.id} message={message} />
+              <MessageBubble key={message.id} message={message} calm={calm} />
             ))}
           </div>
         )}
-        <div ref={bottom} className="h-px" />
       </div>
 
-      <div className="sticky bottom-[calc(6rem+env(safe-area-inset-bottom))] z-30 mt-6 md:bottom-4">
+      {/* Borde de scroll: el contenido se desvanece bajo el compositor en lugar de cortarse. */}
+      <div className="sticky bottom-[calc(6rem+env(safe-area-inset-bottom))] z-30 mt-6 bg-gradient-to-t from-canvas from-75% to-transparent pt-8 md:bottom-0 md:pb-4">
+        <SupportBanner
+          frustration={frustration}
+          escalation={escalation}
+          disabled={isStreaming}
+          onRequestHelp={() => void requestHelp()}
+        />
         <ChatComposer isStreaming={isStreaming} onSend={(text) => void send(text)} onStop={stop} />
       </div>
     </div>

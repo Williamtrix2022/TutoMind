@@ -51,7 +51,7 @@ function Thinking() {
   );
 }
 
-export function MessageBubble({ message }: { message: ChatMessage }) {
+export function MessageBubble({ message, calm = false }: { message: ChatMessage; calm?: boolean }) {
   if (message.role === "user") {
     return (
       <motion.div
@@ -74,9 +74,13 @@ export function MessageBubble({ message }: { message: ChatMessage }) {
       transition={spring}
       className="flex items-start gap-3"
     >
-      <TutorOrb active={message.streaming} className="mt-1 size-8" />
+      <TutorOrb active={message.streaming} calm={calm} className="mt-1 size-8" />
       <div className="min-w-0 flex-1 space-y-3">
-        <div className="rounded-3xl rounded-tl-lg border border-line bg-card px-5 py-4 shadow-card">
+        <div
+          className={`rounded-3xl rounded-tl-lg border bg-card px-5 py-4 shadow-card transition-colors duration-700 ${
+            calm ? "border-glow/50" : "border-line"
+          }`}
+        >
           {message.content ? <Markdown content={message.content} /> : message.streaming ? <Thinking /> : null}
 
           {message.error && (

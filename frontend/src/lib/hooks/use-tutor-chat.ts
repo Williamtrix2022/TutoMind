@@ -122,6 +122,12 @@ export function useTutorChat({ courseId, level }: UseTutorChatOptions) {
 
   const stop = useCallback(() => controller.current?.abort(), []);
 
+  /** El estudiante pide apoyo humano de forma explícita. */
+  const requestHelp = useCallback(
+    () => send("Necesito ayuda de mi docente con este tema.", { requestHumanHelp: true }),
+    [send],
+  );
+
   const reset = useCallback(() => {
     controller.current?.abort();
     conversationId.current = null;
@@ -135,5 +141,5 @@ export function useTutorChat({ courseId, level }: UseTutorChatOptions) {
 
   const isStreaming = messages.some((m) => m.streaming);
 
-  return { messages, isStreaming, frustration, escalation, send, stop, reset };
+  return { messages, isStreaming, frustration, escalation, send, stop, requestHelp, reset };
 }

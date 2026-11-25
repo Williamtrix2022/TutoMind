@@ -1,6 +1,6 @@
 import { delay, http, HttpResponse } from "msw";
 import type { components } from "@/lib/api/schema";
-import { MOCK_STUDENTS, MOCK_TOPICS, MOCK_TUTOR_REPLY } from "./fixtures";
+import { MOCK_HELP_REPLY, MOCK_STUDENTS, MOCK_TOPICS, MOCK_TUTOR_REPLY } from "./fixtures";
 
 type LoginRequest = components["schemas"]["LoginRequest"];
 type LoginResponse = components["schemas"]["LoginResponse"];
@@ -15,7 +15,9 @@ const FRUSTRATION_PATTERN = /no entiendo|no puedo|me rindo|frustr/i;
 function sseStream(request: Request, body: TutorChatRequest): ReadableStream<Uint8Array> {
   const encoder = new TextEncoder();
   const lastUserMessage = [...body.messages].reverse().find((m) => m.role === "user")?.content ?? "";
-  const frustrated = FRUSTRATION_PATTERN.test(lastUserMessage) || body.request_human_help === true;
+  const wantsHuman = body.request_human_help === true;
+  const frustrated = !wantsHuman && FRUSTRATION_PATTERN.test(lastUserMessage);
+  const reply = wantsHuman ? MOCK_HELP_REPLY : MOCK_TUTOR_REPLY;
 
   return new ReadableStream<Uint8Array>({
     async start(controller) {
@@ -26,7 +28,7 @@ function sseStream(request: Request, body: TutorChatRequest): ReadableStream<Uin
         send({ type: "frustration", frustration: { detected: true, score: 0.8, adapted_tone: true } });
       }
 
-      for (const chunk of MOCK_TUTOR_REPLY.split(/(\s+)/)) {
+      for (const chunk of reply.split(/(\s+)/)) {
         if (request.signal.aborted) {
           controller.close();
           return;
@@ -35,18 +37,27 @@ function sseStream(request: Request, body: TutorChatRequest): ReadableStream<Uin
         await delay(20);
       }
 
-      send({
-        type: "sources",
-        sources: [{ document_id: "doc-1", title: "Guía de cálculo diferencial", page: 12, moodle_url: null }],
-      });
+      if (!wantsHuman) {
+        send({
+          type: "sources",
+          sources: [
+            {
+              document_id: "doc-1",
+              title: "Guía de cálculo diferencial",
+              page: 12,
+              moodle_url: "https://moodle.example.edu/mod/resource/view.php?id=1",
+            },
+          ],
+        });
+      }
 
-      if (frustrated) {
+      if (wantsHuman || frustrated) {
         send({
           type: "escalation",
           escalation: {
             suggested: true,
-            reason: body.request_human_help ? "student_requested" : "persistent_frustration",
-            ticket_id: body.request_human_help ? "T-1024" : null,
+            reason: wantsHuman ? "student_requested" : "persistent_frustration",
+            ticket_id: wantsHuman ? "T-1024" : null,
           },
         });
       }
