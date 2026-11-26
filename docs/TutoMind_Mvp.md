@@ -191,6 +191,7 @@ Pendiente. Ver [`backend/README_BACKEND.md`](../backend/README_BACKEND.md) y `ba
 | 2026-11-25 | Archivos: máximo 20 MB; tipos PDF, DOCX y PPTX | Cubre el material típico de clase; mismo límite en frontend y backend. |
 | 2026-11-25 | Subida con XHR en lugar de `fetch` | `fetch` no informa el progreso de subida. |
 | 2026-11-25 | Login real: el `role` del cuerpo solo confirma el de la cuenta; el rol de las rutas se lee de la base de datos | Evita escalar privilegios con un token o un campo manipulado ([#15](https://github.com/Williamtrix2022/TutoMind/issues/15)). Para el demo, usuarios sembrados: `docente@tutomind.demo`, `ana@tutomind.demo`… con `demo12345`. |
+| 2026-11-26 | IA gratuita: Google Gemini (`gemini-2.5-flash` + `gemini-embedding-001` a 1024 dims) en lugar de la API de Anthropic | El MVP debe costar cero. El nivel gratuito puede usar los datos para mejorar modelos: **solo documentos de demo**. Detrás de `LLMClient` (`backend/app/services/llm.py`) para poder cambiar de proveedor. |
 
 ---
 
