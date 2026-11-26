@@ -35,6 +35,20 @@ Variables de entorno o archivo `.env` (ver `.env.example`). Hoy:
 |---|---|---|
 | `CORS_ORIGINS` | `http://localhost:3000` | Orígenes permitidos, separados por coma |
 | `ENVIRONMENT` | `development` | Nombre del entorno |
+| `DATABASE_URL` | `postgresql+psycopg://tutomind:tutomind@localhost:5432/tutomind` | Conexión a PostgreSQL |
+| `EMBEDDING_DIMENSIONS` | `1024` | Tamaño de los vectores |
+
+## Base de datos
+PostgreSQL 16 + pgvector. Credenciales de desarrollo en `docker-compose.yml`.
+```bash
+docker compose up -d db            # levanta Postgres con pgvector
+alembic upgrade head               # crea el esquema
+python -m app.db.seed              # 1 curso (id `demo`), 1 docente y 5 estudiantes
+```
+- Usuarios demo: `docente@tutomind.demo`, `ana@tutomind.demo`... con la contraseña `demo12345` (solo desarrollo).
+- Nueva migración: `alembic revision -m "descripcion"` (escríbela a mano; `0001_initial.py` es el ejemplo).
+- Dimensión de los embeddings: `EMBEDDING_DIMENSIONS` (1024). Cambiarla exige una migración nueva.
+- Los tests de `tests/db/` usan un Postgres embebido con pgvector (`pgserver`), **sin Docker**. Para usar otro servidor: `TEST_DATABASE_URL=postgresql://...` (se borra el esquema `public`).
 
 ## Errores
 Todo error se devuelve con el formato `ErrorResponse` del contrato: `{ "code", "message", "details"? }`.
@@ -49,7 +63,9 @@ python -m ruff check .  # linter
 ## Estructura
 ```
 backend/
-├── app/            # Código de la aplicación (main, core/, api/)
+├── app/            # Código de la aplicación (main, core/, api/, schemas/, db/)
+├── migrations/     # Alembic
+├── docker-compose.yml
 ├── tests/          # pytest
 ├── .env.example
 ├── requirements.txt

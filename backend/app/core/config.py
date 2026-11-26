@@ -15,6 +15,11 @@ class Settings(BaseSettings):
     # NoDecode: accept "a,b" from the environment instead of requiring a JSON list.
     cors_origins: Annotated[list[str], NoDecode] = ["http://localhost:3000"]
 
+    # Matches docker-compose.yml. Development credentials only.
+    database_url: str = "postgresql+psycopg://tutomind:tutomind@localhost:5432/tutomind"
+    # Size of the embedding vectors stored in pgvector. Changing it needs a new migration.
+    embedding_dimensions: int = 1024
+
     @field_validator("cors_origins", mode="before")
     @classmethod
     def split_origins(cls, value: object) -> object:
