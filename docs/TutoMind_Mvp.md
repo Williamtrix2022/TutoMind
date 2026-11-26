@@ -37,15 +37,15 @@ TutoMind es una plataforma web educativa (PWA) integrada con **Moodle** que ofre
 
 ## 2. Estado actual
 
-**Progreso global: 23 de 29 tareas (79 %)**
+**Progreso global: 24 de 29 tareas (83 %)**
 
-`████████████████░░░░` 79 %
+`█████████████████░░░` 83 %
 
 | Área | Estado | Detalle |
 |---|---|---|
 | **Contrato** (`docs/openapi.json`) | ✅ Listo | Los 5 endpoints definidos, más el `GET` de documentos ([#38](https://github.com/Williamtrix2022/TutoMind/pull/38)). Cambios solo por PR del contrato. |
 | **Frontend** | ✅ Sprint 2 completo | Todas las pantallas (login, tutor, documentos, riesgo, temas e inicios por rol) con carga, vacío y error, y reintentos solo ante fallos de red o 5xx. Habla con el backend real por defecto (`NEXT_PUBLIC_USE_MOCKS=false`). Riesgo y temas esperan los endpoints #22 y #23. |
-| **Backend** | 🔄 En curso | Sprint 1, #22 y #23 listos: auth, documentos, tutor, frustración, tickets, riesgo con XAI y termómetro del aula. Todos los endpoints del contrato están implementados. Falta #24 (Moodle). Funciona sin API key (cliente offline). |
+| **Backend** | ✅ Completo | Sprint 1 y Sprint 2 del backend completos (#12–#24): auth, documentos, tutor con RAG/SSE, frustración y tickets, riesgo con XAI, termómetro del aula y Moodle. Todos los endpoints del contrato están implementados. Funciona sin API key y sin Moodle (clientes offline/simulado); el cliente de Moodle real **no está probado contra un Moodle real** y Gemini real tampoco. |
 
 > Login, documentos y tutor ya se probaron contra el backend real (ver sección 6). Riesgo y temas siguen sin endpoint: mientras tanto el frontend muestra su estado de error con «Reintentar», o se pueden ver con los mocks (`NEXT_PUBLIC_USE_MOCKS=true`).
 
@@ -67,7 +67,7 @@ TutoMind es una plataforma web educativa (PWA) integrada con **Moodle** que ofre
 |---|---|---|---|---|
 | **Sprint 0** | hasta 24 nov | Fase 0 · Fundaciones | Contrato, esqueleto backend, Git y App Shell | ✅ 4 / 4 |
 | **Sprint 1** | 25 – 27 nov | Fase 1 · Núcleo | Auth, documentos, RAG y chat del tutor | ✅ 14 / 14 |
-| **Sprint 2** | 28 – 29 nov | Fase 2 · Analítica | Riesgo con XAI, temas, integración completa | 🔄 5 / 6 |
+| **Sprint 2** | 28 – 29 nov | Fase 2 · Analítica | Riesgo con XAI, temas, integración completa | ✅ 6 / 6 |
 | **Entrega** | 30 nov | Fase 3 · Pulido | QA, despliegue, documentación y demo | ⬜ 0 / 5 |
 
 ---
@@ -111,7 +111,7 @@ TutoMind es una plataforma web educativa (PWA) integrada con **Moodle** que ofre
 | [#21](https://github.com/Williamtrix2022/TutoMind/issues/21) | Integración real con el backend y manejo de errores | Frontend | @Williamtrix2022 | ✅ | [#56](https://github.com/Williamtrix2022/TutoMind/pull/56) |
 | [#22](https://github.com/Williamtrix2022/TutoMind/issues/22) | Servicio de riesgo con explicabilidad (XAI) | Backend | @Jhon-Quiceno | ✅ | [#58](https://github.com/Williamtrix2022/TutoMind/pull/58) |
 | [#23](https://github.com/Williamtrix2022/TutoMind/issues/23) | `GET /analytics/.../topics`: agregación y confusión | Backend | @Jhon-Quiceno | ✅ | [#59](https://github.com/Williamtrix2022/TutoMind/pull/59) |
-| [#24](https://github.com/Williamtrix2022/TutoMind/issues/24) | Integración con Moodle (eventos y enlaces) | Backend | @Jhon-Quiceno | ⬜ | — |
+| [#24](https://github.com/Williamtrix2022/TutoMind/issues/24) | Integración con Moodle (eventos y enlaces) | Backend | @Jhon-Quiceno | ✅ | [#60](https://github.com/Williamtrix2022/TutoMind/pull/60) |
 
 ### Entrega · 30 nov ⬜
 
@@ -257,6 +257,7 @@ Con el backend encendido, entra con los usuarios demo de arriba.
 Más reciente primero.
 
 ### 2026-11-26
+- Backend: integración con Moodle (cliente de Web Services, ingesta idempotente de eventos, enlaces en las citas y datos simulados documentados) (#24) — [#60](https://github.com/Williamtrix2022/TutoMind/pull/60).
 - Backend: temas y termómetro del aula con alertas de confusión; tema por pregunta guardado en cada mensaje (#23) — [#59](https://github.com/Williamtrix2022/TutoMind/pull/59).
 - Backend: riesgo académico con explicabilidad XAI, modelo de reglas ponderadas, y guardado de la frustración por mensaje (#22) — [#58](https://github.com/Williamtrix2022/TutoMind/pull/58).
 - Integración real: mocks apagados por defecto, error de red legible y reintentos solo ante fallos recuperables (#21) — [#56](https://github.com/Williamtrix2022/TutoMind/pull/56).
