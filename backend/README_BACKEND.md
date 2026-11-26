@@ -1,6 +1,6 @@
 # TutoMind — Backend
 
-FastAPI (Python 3.12) + Pydantic v2 + PostgreSQL/pgvector + Anthropic SDK.
+FastAPI (Python 3.12) + Pydantic v2 + PostgreSQL/pgvector + Google Gemini (nivel gratuito).
 
 ## Contrato
 La fuente única de verdad es [`../docs/openapi.json`](../docs/openapi.json). Cualquier cambio de endpoint o esquema se hace ahí primero, en un PR revisado por ambos.
@@ -39,7 +39,9 @@ Variables de entorno o archivo `.env` (ver `.env.example`). Hoy:
 | `ACCESS_TOKEN_EXPIRES_SECONDS` | `3600` | Vigencia del token |
 | `DATABASE_URL` | `postgresql+psycopg://tutomind:tutomind@localhost:5432/tutomind` | Conexión a PostgreSQL |
 | `EMBEDDING_DIMENSIONS` | `1024` | Tamaño de los vectores |
-| `EMBEDDING_PROVIDER` | `hashing` | Proveedor de embeddings (`hashing` = offline) |
+| `GEMINI_API_KEY` | vacío | Clave gratuita de [Google AI Studio](https://aistudio.google.com/apikey). **Sin clave** el backend usa un cliente offline (embeddings léxicos y tutor de prueba) para poder desarrollar y probar |
+| `LLM_MODEL` | `gemini-2.5-flash` | Modelo del tutor |
+| `EMBEDDING_MODEL` | `gemini-embedding-001` | Modelo de embeddings (se pide a 1024 dimensiones y se normaliza) |
 
 ## Base de datos
 PostgreSQL 16 + pgvector. Credenciales de desarrollo en `docker-compose.yml`.
@@ -66,7 +68,7 @@ python -m app.db.seed              # 1 curso (id `demo`), 1 docente y 5 estudian
 - `GET /api/v1/courses/{course_id}/documents`: lista los más recientes primero, con su estado `queued → processing → indexed | failed` (y `error_message` si falló).
 - Validaciones: PDF/DOCX/PPTX (por MIME o extensión) y que el contenido coincida con el tipo → `415`; máximo 20 MB → `413`; archivo vacío o sin nombre → `422`; curso inexistente → `404`; no matriculado → `403`.
 - Pipeline (`app/services/`): extracción de texto (`pypdf`, `python-docx`, `python-pptx`) → chunks de ~1000 caracteres con solape → embeddings → pgvector. Cualquier fallo deja el documento en `failed` con un motivo legible; los detalles internos solo van al log.
-- `EMBEDDING_PROVIDER=hashing` (por defecto): embeddings deterministas y offline, **sin API key**. Son léxicos (comparten vocabulario), no semánticos; un proveedor real se conecta en `get_embedder` sin tocar el resto.
+- Los embeddings salen de `LLMClient.embed()` (`app/services/llm.py`): Gemini si hay `GEMINI_API_KEY`; si no, `OfflineLLMClient` (deterministas, **sin API key**, léxicos y no semánticos).
 
 ## Errores
 Todo error se devuelve con el formato `ErrorResponse` del contrato: `{ "code", "message", "details"? }`.

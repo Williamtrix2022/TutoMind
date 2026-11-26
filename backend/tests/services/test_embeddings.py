@@ -2,8 +2,7 @@ import math
 
 import pytest
 
-from app.core.config import Settings
-from app.services.embeddings import HashingEmbedder, get_embedder
+from app.services.embeddings import HashingEmbedder
 
 
 def cosine(a, b):
@@ -46,15 +45,3 @@ def test_empty_text_yields_a_valid_zero_free_vector():
     vector = HashingEmbedder(32).embed([""])[0]
 
     assert len(vector) == 32 and not any(math.isnan(x) for x in vector)
-
-
-def test_factory_returns_the_hashing_embedder_with_the_configured_dimension():
-    embedder = get_embedder(Settings(_env_file=None))
-
-    assert isinstance(embedder, HashingEmbedder)
-    assert embedder.dimensions == 1024
-
-
-def test_unknown_provider_fails_loudly():
-    with pytest.raises(ValueError, match="voyage"):
-        get_embedder(Settings(_env_file=None, embedding_provider="voyage"))

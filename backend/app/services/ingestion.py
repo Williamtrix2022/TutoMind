@@ -1,14 +1,16 @@
 """Turns an uploaded document into searchable chunks: extract, chunk, embed, store."""
 
 import logging
+from functools import partial
 
+import anyio
 from sqlalchemy.orm import Session
 
 from app.db.models import Document, DocumentChunk
 from app.db.session import SessionFactory
 from app.services.chunking import chunk_pages
-from app.services.embeddings import Embedder
 from app.services.extraction import ExtractionError, extract_pages
+from app.services.llm import LLMClient
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +29,7 @@ def ingest_document(
     document_id: str,
     data: bytes,
     mime_type: str,
-    embedder: Embedder,
+    llm: LLMClient,
     session_factory: SessionFactory,
 ) -> None:
     """Runs after the upload response. Never raises: a failure becomes `status = failed`."""
@@ -41,7 +43,8 @@ def ingest_document(
 
         try:
             chunks = chunk_pages(extract_pages(data, mime_type))
-            vectors = embedder.embed([chunk.content for chunk in chunks])
+            # This runs in a worker thread; `llm.embed` is async, so hop back to the event loop.
+            vectors = anyio.from_thread.run(partial(llm.embed, [c.content for c in chunks]))
             session.add_all(
                 DocumentChunk(
                     document_id=document_id,

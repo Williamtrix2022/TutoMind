@@ -11,8 +11,8 @@ from app.db.models import Course, Document, Enrollment, User
 from app.db.session import SessionFactory, get_session, get_session_factory
 from app.schemas import CourseDocument, DocumentListResponse, DocumentUploadResponse, ErrorResponse
 from app.schemas.documents import DOCX_MIME, PDF_MIME, PPTX_MIME
-from app.services.embeddings import Embedder, get_embedder
 from app.services.ingestion import ingest_document
+from app.services.llm import LLMClient, get_llm_client
 
 router = APIRouter(prefix="/api/v1/courses", tags=["documents"])
 
@@ -87,7 +87,7 @@ def upload_document(
     title: str | None = Form(None, max_length=200),
     user: User = Depends(require_role("teacher")),
     session: Session = Depends(get_session),
-    embedder: Embedder = Depends(get_embedder),
+    llm: LLMClient = Depends(get_llm_client),
     session_factory: SessionFactory = Depends(get_session_factory),
 ) -> DocumentUploadResponse:
     _course_for_teacher(course_id, user, session)
@@ -118,7 +118,7 @@ def upload_document(
     session.add(document)
     session.commit()
 
-    background.add_task(ingest_document, document.id, data, mime, embedder, session_factory)
+    background.add_task(ingest_document, document.id, data, mime, llm, session_factory)
     return DocumentUploadResponse(
         document_id=document.id,
         course_id=course_id,

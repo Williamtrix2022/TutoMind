@@ -26,7 +26,7 @@ Plataforma web educativa (PWA) integrada con **Moodle** que combina tutoría per
 ```text
 tutomind/
 ├── frontend/          # Next.js 15 + TypeScript + Tailwind + Motion (PWA)
-├── backend/           # FastAPI + Python 3.12 + pgvector + Claude API
+├── backend/           # FastAPI + Python 3.12 + pgvector + Gemini (gratis)
 ├── docs/              # Contrato OpenAPI, estado del MVP (TutoMind_Mvp.md) y diagramas
 ├── .github/           # Plantillas de issues y pull requests
 ├── CLAUDE.md          # Reglas de arquitectura y diseño para Claude Code

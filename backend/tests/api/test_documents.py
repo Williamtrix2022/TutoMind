@@ -4,7 +4,7 @@ from sqlalchemy import select
 
 from app.db.models import Course, Document, DocumentChunk, Enrollment
 from app.schemas import DocumentListResponse, DocumentUploadResponse
-from app.services.embeddings import get_embedder
+from app.services.llm import get_llm_client
 from tests.files import DOCX, PDF, PPTX, make_docx, make_pdf, make_pptx
 
 MAX_BYTES = 20 * 1024 * 1024
@@ -142,14 +142,10 @@ class TestUpload:
         self, api, teacher, auth, settings
     ):
         class Broken:
-            dimensions = 1024
-
-            def embed(self, texts):
+            async def embed(self, texts, *, is_query=False):
                 raise RuntimeError("secret internal detail")
 
-        from app.services.embeddings import get_embedder as dep
-
-        api.app.dependency_overrides[dep] = lambda: Broken()
+        api.app.dependency_overrides[get_llm_client] = lambda: Broken()
         upload(api, auth(teacher))
 
         document = listing(api, auth(teacher)).json()["documents"][0]
@@ -203,7 +199,3 @@ class TestListing:
         upload(api, auth(teacher), course="c2", filename="other.pdf")
 
         assert listing(api, auth(teacher)).json()["documents"] == []
-
-
-def test_default_embedder_matches_the_database_dimension(settings):
-    assert get_embedder(settings).dimensions == 1024

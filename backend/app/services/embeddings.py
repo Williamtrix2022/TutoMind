@@ -1,21 +1,9 @@
-"""Text embeddings behind a small interface, so a real provider can replace the offline one."""
+"""Offline text embeddings (feature hashing). No network, no API key."""
 
 import hashlib
 import math
 import re
 import unicodedata
-from typing import Protocol
-
-from fastapi import Depends
-
-from app.core.config import Settings, get_settings
-
-
-class Embedder(Protocol):
-    dimensions: int
-
-    def embed(self, texts: list[str]) -> list[list[float]]: ...
-
 
 _STOPWORDS = frozenset(
     "a al como con de del el ella en es esta este la las lo los me mi no o para por que se "
@@ -30,10 +18,10 @@ def _tokens(text: str) -> list[str]:
 
 
 class HashingEmbedder:
-    """Deterministic bag-of-words vectors (feature hashing). No network, no API key.
+    """Deterministic bag-of-words vectors. Texts that share vocabulary end up close.
 
-    Texts that share vocabulary end up close, which is enough to exercise retrieval end to end
-    in development and tests. It is lexical, not semantic: a real provider replaces it later.
+    Enough to exercise retrieval end to end in development and tests. It is lexical, not
+    semantic: Gemini (`GeminiClient`) replaces it when `GEMINI_API_KEY` is set.
     """
 
     def __init__(self, dimensions: int) -> None:
@@ -52,12 +40,3 @@ class HashingEmbedder:
 
     def embed(self, texts: list[str]) -> list[list[float]]:
         return [self._embed_one(text) for text in texts]
-
-
-def get_embedder(settings: Settings = Depends(get_settings)) -> Embedder:
-    if settings.embedding_provider == "hashing":
-        return HashingEmbedder(settings.embedding_dimensions)
-    raise ValueError(
-        f"Unknown EMBEDDING_PROVIDER '{settings.embedding_provider}'. "
-        "Supported: 'hashing' (offline). 'voyage' is not implemented yet."
-    )
