@@ -1,14 +1,7 @@
-import { Activity } from "lucide-react";
-import { PagePlaceholder } from "@/components/shell/page-placeholder";
+import { RiskView } from "@/components/risk/risk-view";
 
 export const metadata = { title: "Riesgo académico" };
 
 export default function RiskPage() {
-  return (
-    <PagePlaceholder
-      title="Riesgo académico"
-      icon={Activity}
-      description="Aquí vivirá el semáforo con factores XAI (GET /api/v1/analytics/courses/{course_id}/risk)."
-    />
-  );
+  return <RiskView />;
 }

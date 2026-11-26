@@ -5,7 +5,7 @@ import { Eye, EyeOff, LoaderCircle, TriangleAlert } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useState } from "react";
 import type { FormEvent } from "react";
-import { TutorOrb } from "@/components/tutor/tutor-orb";
+import { LogoMark } from "@/components/brand/logo-mark";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { useLogin } from "@/lib/api/hooks/use-auth";
 import { spring, tap } from "@/lib/motion";
@@ -76,7 +76,7 @@ export function LoginForm() {
         className="w-full max-w-md space-y-8"
       >
         <div className="flex flex-col items-center gap-5 text-center">
-          <TutorOrb active className="size-14" />
+          <LogoMark size={72} />
           <div className="space-y-1">
             <h1 className="text-3xl">Entra a TutoMind</h1>
             <p className="text-sm text-muted">Tu tutor y el seguimiento de tus cursos, en un solo lugar.</p>

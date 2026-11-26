@@ -37,14 +37,14 @@ TutoMind es una plataforma web educativa (PWA) integrada con **Moodle** que ofre
 
 ## 2. Estado actual
 
-**Progreso global: 18 de 29 tareas (62 %)**
+**Progreso global: 19 de 29 tareas (66 %)**
 
-`████████████░░░░░░░░` 62 %
+`█████████████░░░░░░░` 66 %
 
 | Área | Estado | Detalle |
 |---|---|---|
 | **Contrato** (`docs/openapi.json`) | ✅ Listo | Los 5 endpoints definidos, más el `GET` de documentos propuesto en [#38](https://github.com/Williamtrix2022/TutoMind/pull/38) (pendiente de aprobación). Cambios solo por PR del contrato. |
-| **Frontend** | ✅ Sprint 1 completo | App Shell, cliente de API, mocks, chat, frustración, login y carga de documentos (todo contra mocks). Siguiente: Sprint 2, desde #19. |
+| **Frontend** | 🔄 Sprint 2 en curso | Sprint 1 completo y dashboard de riesgo con semáforo y panel XAI (#19), todo contra mocks. Siguiente: #20 (termómetro del aula). |
 | **Backend** | 🔄 En curso | Sprint 1 completo (#12–#18): auth, documentos, tutor con RAG/SSE, frustración y tickets. Funciona sin API key (cliente offline) y con Gemini cuando haya clave. Siguiente: Sprint 2 desde #22 (ver `docs/plan/SPRINT2_BACKEND.md`). |
 
 > El frontend funciona hoy **con mocks** (MSW) que imitan el contrato, así que nadie espera a nadie. La integración real es la tarea #21.
@@ -106,7 +106,7 @@ TutoMind es una plataforma web educativa (PWA) integrada con **Moodle** que ofre
 
 | # | Tarea | Área | Responsable | Estado | PR |
 |---|---|---|---|---|---|
-| [#19](https://github.com/Williamtrix2022/TutoMind/issues/19) | Dashboard de riesgo con semáforo y panel XAI | Frontend | @Williamtrix2022 | ⬜ | — |
+| [#19](https://github.com/Williamtrix2022/TutoMind/issues/19) | Dashboard de riesgo con semáforo y panel XAI | Frontend | @Williamtrix2022 | ✅ | [#53](https://github.com/Williamtrix2022/TutoMind/pull/53) |
 | [#20](https://github.com/Williamtrix2022/TutoMind/issues/20) | Termómetro del aula: temas y alertas de confusión | Frontend | @Williamtrix2022 | ⬜ | — |
 | [#21](https://github.com/Williamtrix2022/TutoMind/issues/21) | Integración real con el backend y manejo de errores | Frontend | @Williamtrix2022 | ⬜ | — |
 | [#22](https://github.com/Williamtrix2022/TutoMind/issues/22) | Servicio de riesgo con explicabilidad (XAI) | Backend | @Jhon-Quiceno | ⬜ | — |
@@ -182,6 +182,8 @@ Pendiente. Ver [`backend/README_BACKEND.md`](../backend/README_BACKEND.md) y `ba
 | Fecha | Decisión | Motivo |
 |---|---|---|
 | 2026-11-24 | Rojo del semáforo: `#E5484D` | `#FA6E5A` ya era «riesgo medio»; este se distingue y mantiene la calma de la paleta. |
+| 2026-11-26 | Riesgo medio en amarillo `#F4B63F` (antes `#FA6E5A`) | El semáforo debe leerse verde, amarillo y rojo. `#FFCF86` sigue reservado para alertas de confusión; el texto usa tintas más oscuras en modo día para mantener el contraste. |
+| 2026-11-26 | Logo «T neuronal» (`LogoMark`) en lugar del ícono de luna | Marca propia: arco (aula), tronco (tutor) y nodos (ideas conectadas), con la chispa de la IA en el centro. |
 | 2026-11-24 | Mocks con MSW 2.x (no 3.x) | La 3.x es reciente y su export de navegador falla con webpack. |
 | 2026-11-24 | Frontend trabaja con mocks hasta el Sprint 2 | Desbloquea al frontend mientras el backend arranca. |
 | 2026-11-25 | Rutas en grupos `(app)` con shell y `(auth)` sin shell | El login no debe mostrar la barra lateral. |
