@@ -12,6 +12,7 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
     func,
+    text,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -26,6 +27,8 @@ MIME_TYPES = (
     "application/vnd.openxmlformats-officedocument.presentationml.presentation",
 )
 MESSAGE_ROLES = ("user", "assistant")
+TICKET_REASONS = ("student_requested", "persistent_frustration", "repeated_failure")
+TICKET_STATUSES = ("open", "resolved")
 
 
 def _in(column: str, values: tuple[str, ...]) -> str:
@@ -138,4 +141,32 @@ class Message(Base):
     )
     role: Mapped[str] = mapped_column(String(20))
     content: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[datetime] = _created_at()
+
+
+class SupportTicket(Base):
+    """A request for the teacher's help, raised from a tutor conversation."""
+
+    __tablename__ = "support_tickets"
+    __table_args__ = (
+        CheckConstraint(_in("reason", TICKET_REASONS), name="ck_tickets_reason"),
+        CheckConstraint(_in("status", TICKET_STATUSES), name="ck_tickets_status"),
+        # One open ticket per conversation and reason, even under concurrent requests.
+        Index(
+            "uq_tickets_open_per_conversation_reason",
+            "conversation_id",
+            "reason",
+            unique=True,
+            postgresql_where=text("status = 'open'"),
+        ),
+    )
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=new_id)
+    course_id: Mapped[str] = mapped_column(ForeignKey("courses.id", ondelete="CASCADE"), index=True)
+    student_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    conversation_id: Mapped[str] = mapped_column(
+        ForeignKey("conversations.id", ondelete="CASCADE"), index=True
+    )
+    reason: Mapped[str] = mapped_column(String(30))
+    status: Mapped[str] = mapped_column(String(20), default="open", server_default="open")
     created_at: Mapped[datetime] = _created_at()

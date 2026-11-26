@@ -15,6 +15,7 @@ EXPECTED_TABLES = {
     "document_chunks",
     "conversations",
     "messages",
+    "support_tickets",
 }
 
 
