@@ -18,20 +18,42 @@ La fuente única de verdad es [`../docs/openapi.json`](../docs/openapi.json). Cu
 - Todo nivel de riesgo se devuelve con sus factores XAI estructurados.
 - CORS: permitir `http://localhost:3000` en desarrollo.
 
-## Arranque (a completar)
+## Arranque
 ```bash
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
-cp .env.example .env
+cd backend
+uv venv --python 3.12 .venv            # o: python -m venv .venv
+.venv\Scriptsctivate                 # Linux/macOS: source .venv/bin/activate
+pip install -r requirements-dev.txt
 uvicorn app.main:app --reload --port 8000
+```
+- `GET http://localhost:8000/health` → `{"status":"ok"}` (no forma parte del contrato).
+- Docs interactivas en `http://localhost:8000/docs`.
+
+## Configuración
+Variables de entorno o archivo `.env` (ver `.env.example`). Hoy:
+| Variable | Por defecto | Uso |
+|---|---|---|
+| `CORS_ORIGINS` | `http://localhost:3000` | Orígenes permitidos, separados por coma |
+| `ENVIRONMENT` | `development` | Nombre del entorno |
+
+## Errores
+Todo error se devuelve con el formato `ErrorResponse` del contrato: `{ "code", "message", "details"? }`.
+Para fallar desde un endpoint: `raise ApiError(status, "codigo", "Mensaje")` (`app/core/errors.py`).
+
+## Pruebas y calidad
+```bash
+python -m pytest        # tests
+python -m ruff check .  # linter
 ```
 
 ## Estructura
 ```
 backend/
-├── app/            # Código de la aplicación
+├── app/            # Código de la aplicación (main, core/, api/)
+├── tests/          # pytest
 ├── .env.example
 ├── requirements.txt
+├── requirements-dev.txt
+├── pyproject.toml  # pytest y ruff
 └── README_BACKEND.md
 ```

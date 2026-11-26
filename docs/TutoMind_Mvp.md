@@ -37,15 +37,15 @@ TutoMind es una plataforma web educativa (PWA) integrada con **Moodle** que ofre
 
 ## 2. Estado actual
 
-**Progreso global: 11 de 29 tareas (38 %)**
+**Progreso global: 12 de 29 tareas (41 %)**
 
-`████████░░░░░░░░░░░░` 38 %
+`████████░░░░░░░░░░░░` 41 %
 
 | Área | Estado | Detalle |
 |---|---|---|
 | **Contrato** (`docs/openapi.json`) | ✅ Listo | Los 5 endpoints definidos, más el `GET` de documentos propuesto en [#38](https://github.com/Williamtrix2022/TutoMind/pull/38) (pendiente de aprobación). Cambios solo por PR del contrato. |
 | **Frontend** | ✅ Sprint 1 completo | App Shell, cliente de API, mocks, chat, frustración, login y carga de documentos (todo contra mocks). Siguiente: Sprint 2, desde #19. |
-| **Backend** | ⬜ Sin arrancar | `backend/app/` vacío. Primera tarea: #12 (base FastAPI). |
+| **Backend** | 🔄 En curso | Base FastAPI lista (#12). Siguiente: #13 (modelos Pydantic). |
 
 > El frontend funciona hoy **con mocks** (MSW) que imitan el contrato, así que nadie espera a nadie. La integración real es la tarea #21.
 
@@ -66,7 +66,7 @@ TutoMind es una plataforma web educativa (PWA) integrada con **Moodle** que ofre
 | Sprint | Fechas | Fase | Objetivo | Progreso |
 |---|---|---|---|---|
 | **Sprint 0** | hasta 24 nov | Fase 0 · Fundaciones | Contrato, esqueleto backend, Git y App Shell | ✅ 4 / 4 |
-| **Sprint 1** | 25 – 27 nov | Fase 1 · Núcleo | Auth, documentos, RAG y chat del tutor | 🔄 7 / 14 |
+| **Sprint 1** | 25 – 27 nov | Fase 1 · Núcleo | Auth, documentos, RAG y chat del tutor | 🔄 8 / 14 |
 | **Sprint 2** | 28 – 29 nov | Fase 2 · Analítica | Riesgo con XAI, temas, integración completa | ⬜ 0 / 6 |
 | **Entrega** | 30 nov | Fase 3 · Pulido | QA, despliegue, documentación y demo | ⬜ 0 / 5 |
 
@@ -94,7 +94,7 @@ TutoMind es una plataforma web educativa (PWA) integrada con **Moodle** que ofre
 | [#9](https://github.com/Williamtrix2022/TutoMind/issues/9) | Chat del tutor: streaming, Markdown, KaTeX y código | Frontend | @Williamtrix2022 | ✅ | [#33](https://github.com/Williamtrix2022/TutoMind/pull/33) | Con mocks |
 | [#10](https://github.com/Williamtrix2022/TutoMind/issues/10) | Señales de frustración y ayuda humana | Frontend | @Williamtrix2022 | ✅ | [#34](https://github.com/Williamtrix2022/TutoMind/pull/34) | Con mocks |
 | [#11](https://github.com/Williamtrix2022/TutoMind/issues/11) | Pantalla de carga de documentos | Frontend | @Williamtrix2022 | ✅ | [#39](https://github.com/Williamtrix2022/TutoMind/pull/39) | Con mocks; usa el nuevo `GET` ([#38](https://github.com/Williamtrix2022/TutoMind/pull/38)) |
-| [#12](https://github.com/Williamtrix2022/TutoMind/issues/12) | App FastAPI: config, CORS, health y errores | Backend | @Jhon-Quiceno | ⬜ | — | **Empezar aquí** |
+| [#12](https://github.com/Williamtrix2022/TutoMind/issues/12) | App FastAPI: config, CORS, health y errores | Backend | @Jhon-Quiceno | ✅ | [#41](https://github.com/Williamtrix2022/TutoMind/pull/41) | **Empezar aquí** |
 | [#13](https://github.com/Williamtrix2022/TutoMind/issues/13) | Modelos Pydantic v2 alineados con el contrato | Backend | @Jhon-Quiceno | ⬜ | — | |
 | [#14](https://github.com/Williamtrix2022/TutoMind/issues/14) | PostgreSQL + pgvector (docker-compose y migraciones) | Backend | @Jhon-Quiceno | ⬜ | — | |
 | [#15](https://github.com/Williamtrix2022/TutoMind/issues/15) | `POST /auth/login` con JWT y roles | Backend | @Jhon-Quiceno | ⬜ | — | |
@@ -224,6 +224,7 @@ Pendiente. Ver [`backend/README_BACKEND.md`](../backend/README_BACKEND.md) y `ba
 Más reciente primero.
 
 ### 2026-11-25
+- Backend: app FastAPI con config, CORS, health y errores ErrorResponse (#12) — [#41](https://github.com/Williamtrix2022/TutoMind/pull/41).
 - Pantalla de carga de documentos del curso — [#39](https://github.com/Williamtrix2022/TutoMind/pull/39).
 - Contrato: `GET /courses/{id}/documents` y límite de 20 MB — [#38](https://github.com/Williamtrix2022/TutoMind/pull/38) _(en revisión)_.
 - Se crea este documento (`docs/TutoMind_Mvp.md`) — [#37](https://github.com/Williamtrix2022/TutoMind/pull/37).
