@@ -1,6 +1,7 @@
 # PostgreSQL 16 + pgvector for local development.
 #   docker compose up -d db
 #   alembic upgrade head && python -m app.db.seed
+# Si el 5432 ya esta ocupado (p. ej. un PostgreSQL de Windows), usa POSTGRES_PORT=5433.
 # Development credentials only; override with POSTGRES_* in your shell or a .env file.
 services:
   db:
@@ -11,7 +12,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tutomind}
       POSTGRES_DB: ${POSTGRES_DB:-tutomind}
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - tutomind-pgdata:/var/lib/postgresql/data
     healthcheck:

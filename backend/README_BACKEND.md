@@ -50,6 +50,7 @@ docker compose up -d db            # levanta Postgres con pgvector
 alembic upgrade head               # crea el esquema
 python -m app.db.seed              # 1 curso (id `demo`), 1 docente y 5 estudiantes
 ```
+- Si el puerto 5432 ya está ocupado (por ejemplo, un PostgreSQL instalado en Windows), define `POSTGRES_PORT=5433` y apunta `DATABASE_URL` al mismo puerto: `postgresql+psycopg://tutomind:tutomind@localhost:5433/tutomind`.
 - Usuarios demo: `docente@tutomind.demo`, `ana@tutomind.demo`... con la contraseña `demo12345` (solo desarrollo).
 - Nueva migración: `alembic revision -m "descripcion"` (escríbela a mano; `0001_initial.py` es el ejemplo).
 - Dimensión de los embeddings: `EMBEDDING_DIMENSIONS` (1024). Cambiarla exige una migración nueva.
