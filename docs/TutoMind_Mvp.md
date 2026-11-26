@@ -106,7 +106,7 @@ TutoMind es una plataforma web educativa (PWA) integrada con **Moodle** que ofre
 
 | # | Tarea | Área | Responsable | Estado | PR |
 |---|---|---|---|---|---|
-| [#19](https://github.com/Williamtrix2022/TutoMind/issues/19) | Dashboard de riesgo con semáforo y panel XAI | Frontend | @Williamtrix2022 | ✅ | PR pendiente |
+| [#19](https://github.com/Williamtrix2022/TutoMind/issues/19) | Dashboard de riesgo con semáforo y panel XAI | Frontend | @Williamtrix2022 | ✅ | [#53](https://github.com/Williamtrix2022/TutoMind/pull/53) |
 | [#20](https://github.com/Williamtrix2022/TutoMind/issues/20) | Termómetro del aula: temas y alertas de confusión | Frontend | @Williamtrix2022 | ⬜ | — |
 | [#21](https://github.com/Williamtrix2022/TutoMind/issues/21) | Integración real con el backend y manejo de errores | Frontend | @Williamtrix2022 | ⬜ | — |
 | [#22](https://github.com/Williamtrix2022/TutoMind/issues/22) | Servicio de riesgo con explicabilidad (XAI) | Backend | @Jhon-Quiceno | ⬜ | — |
