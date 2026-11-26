@@ -39,7 +39,7 @@ Variables de entorno o archivo `.env` (ver `.env.example`). Hoy:
 | `ACCESS_TOKEN_EXPIRES_SECONDS` | `3600` | Vigencia del token |
 | `DATABASE_URL` | `postgresql+psycopg://tutomind:tutomind@localhost:5432/tutomind` | Conexión a PostgreSQL |
 | `EMBEDDING_DIMENSIONS` | `1024` | Tamaño de los vectores |
-| `GEMINI_API_KEY` | vacío | Clave gratuita de [Google AI Studio](https://aistudio.google.com/apikey) |
+| `GEMINI_API_KEY` | vacío | Clave gratuita de [Google AI Studio](https://aistudio.google.com/apikey). **Sin clave** el backend usa un cliente offline (embeddings léxicos y tutor de prueba) para poder desarrollar y probar |
 | `LLM_MODEL` | `gemini-2.5-flash` | Modelo del tutor |
 | `EMBEDDING_MODEL` | `gemini-embedding-001` | Modelo de embeddings (se pide a 1024 dimensiones y se normaliza) |
 
@@ -50,6 +50,7 @@ docker compose up -d db            # levanta Postgres con pgvector
 alembic upgrade head               # crea el esquema
 python -m app.db.seed              # 1 curso (id `demo`), 1 docente y 5 estudiantes
 ```
+- Si el puerto 5432 ya está ocupado (por ejemplo, un PostgreSQL instalado en Windows), define `POSTGRES_PORT=5433` y apunta `DATABASE_URL` al mismo puerto: `postgresql+psycopg://tutomind:tutomind@localhost:5433/tutomind`.
 - Usuarios demo: `docente@tutomind.demo`, `ana@tutomind.demo`... con la contraseña `demo12345` (solo desarrollo).
 - Nueva migración: `alembic revision -m "descripcion"` (escríbela a mano; `0001_initial.py` es el ejemplo).
 - Dimensión de los embeddings: `EMBEDDING_DIMENSIONS` (1024). Cambiarla exige una migración nueva.
@@ -62,6 +63,28 @@ python -m app.db.seed              # 1 curso (id `demo`), 1 docente y 5 estudian
 - `role` en el login es solo demo: puede **confirmar** el rol de la cuenta, nunca otorgar otro.
 - En endpoints: `Depends(get_current_user)` o `Depends(require_role("teacher"))` (`app/api/deps.py`). El rol se lee de la base de datos, no del token.
 - `JWT_SECRET` es obligatorio (aleatorio, ≥ 32 caracteres) cuando `ENVIRONMENT` no es `development`; la app no arranca sin él.
+
+## Documentos (RAG)
+- `POST /api/v1/courses/{course_id}/documents` (solo docente matriculado en el curso): multipart `file` (+ `title` opcional). Responde `202` y procesa en segundo plano.
+- `GET /api/v1/courses/{course_id}/documents`: lista los más recientes primero, con su estado `queued → processing → indexed | failed` (y `error_message` si falló).
+- Validaciones: PDF/DOCX/PPTX (por MIME o extensión) y que el contenido coincida con el tipo → `415`; máximo 20 MB → `413`; archivo vacío o sin nombre → `422`; curso inexistente → `404`; no matriculado → `403`.
+- Pipeline (`app/services/`): extracción de texto (`pypdf`, `python-docx`, `python-pptx`) → chunks de ~1000 caracteres con solape → embeddings → pgvector. Cualquier fallo deja el documento en `failed` con un motivo legible; los detalles internos solo van al log.
+- Los embeddings salen de `LLMClient.embed()` (`app/services/llm.py`): Gemini si hay `GEMINI_API_KEY`; si no, `OfflineLLMClient` (deterministas, **sin API key**, léxicos y no semánticos).
+
+## Frustración y escalamiento (#18)
+- `app/services/frustration.py`: puntuación 0–1 por mensaje, basada en reglas (transparente y sin costo). Solo cuentan las palabras del estudiante; el código y las fórmulas se ignoran. Se considera frustración desde `0.5`.
+- Escalamiento: `student_requested` (el estudiante pide ayuda) o `persistent_frustration` (frustrado ahora y en ≥ 2 de sus últimos 3 mensajes). `repeated_failure` está en el contrato pero aún no se detecta.
+- `app/services/tickets.py`: `open_ticket` crea el ticket para el docente en `support_tickets`, sin duplicar uno abierto de la misma conversación y motivo (índice único parcial, a prueba de peticiones simultáneas).
+- Se conecta al chat en #17. Listar los tickets desde la interfaz del docente requiere un endpoint nuevo en el contrato.
+
+## Tutor socrático (#17)
+- `POST /api/v1/tutor/chat/stream` (SSE, cualquier usuario matriculado en el curso). Cada evento es `data: {json}` + línea en blanco, con el formato `TutorStreamEvent` del contrato. Orden: `frustration` (si se detecta) → `token`… → `sources` → `escalation` (si aplica) → `done`. Si el modelo falla: un evento `error` (sin detalles internos) y no hay `done`.
+- Cada turno guarda la pregunta y la respuesta en `conversations`/`messages`. `conversation_id` ajeno o inexistente → `404`.
+- Recuperación (`retrieval.py`): los 4 fragmentos más cercanos **del mismo curso** (distancia coseno) de documentos ya indexados. Si no hay material, el tutor lo dice y no inventa fuentes. Si falla el embedding de la pregunta, responde sin material.
+- Prompt (`tutor_prompt.py`): método socrático, **no entrega la solución completa**, negativa a hacer tareas/exámenes (con guardia extra cuando lo detecta), profundidad según `student_level`, tono empático si hay frustración, y el material va delimitado y escapado como *datos*, no instrucciones (defensa contra prompt injection).
+- Escalamiento: si el estudiante pide ayuda (`request_human_help`) se responde con un acuse fijo, **sin llamar al modelo**, y se abre el ticket; con frustración persistente se abre el ticket y se avisa. `ticket_id` va en el evento `escalation`.
+- Límites: 40 mensajes por petición y 8000 caracteres por mensaje (`422`).
+- Sin `GEMINI_API_KEY` responde `OfflineLLMClient` (reglas, no razona); con clave, Gemini.
 
 ## Errores
 Todo error se devuelve con el formato `ErrorResponse` del contrato: `{ "code", "message", "details"? }`.

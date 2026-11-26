@@ -12,6 +12,8 @@
   --color-primary: #8e97fd;
   --color-success: #6cb28e;
   --color-warning: #fa6e5a;
+  /* Amarillo del semáforo (riesgo medio). #FFCF86 queda para alertas de confusión. */
+  --color-caution: #f4b63f;
   --color-danger: #e5484d;
   --color-highlight: #ffcf86;
   --color-glow: #d9a5b3;
@@ -29,6 +31,10 @@
   --line: rgb(255 255 255 / 0.1); /* border-white/10 */
   --elev-card: 0 12px 40px -12px rgb(0 5 30 / 0.55);
   --on-primary: #03174c;
+  /* Tintas de texto del semáforo: legibles sobre la tarjeta de cada tema. */
+  --ink-success: #8fd1ae;
+  --ink-caution: #ffd27a;
+  --ink-danger: #ff8a8e;
 }
 
 :root[data-theme="light"] {
@@ -40,6 +46,9 @@
   --line: rgb(226 232 240 / 0.8); /* border-slate-200/80 */
   --elev-card: 0 12px 40px -16px rgb(13 37 108 / 0.18);
   --on-primary: #03174c;
+  --ink-success: #2b7a54;
+  --ink-caution: #8a5a00;
+  --ink-danger: #c42b31;
 }
 
 @theme inline {
@@ -49,6 +58,9 @@
   --color-muted: var(--fg-muted);
   --color-line: var(--line);
   --color-on-primary: var(--on-primary);
+  --color-ink-success: var(--ink-success);
+  --color-ink-caution: var(--ink-caution);
+  --color-ink-danger: var(--ink-danger);
   --shadow-card: var(--elev-card);
   --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
 }
