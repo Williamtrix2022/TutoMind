@@ -35,6 +35,22 @@
       }
     },
     "/api/v1/courses/{course_id}/documents": {
+      "get": {
+        "tags": ["documents"],
+        "operationId": "listCourseDocuments",
+        "summary": "Listar los documentos del curso y su estado de indexación",
+        "description": "Solo rol `teacher`. Más recientes primero. El frontend consulta este endpoint cada ~3 s mientras haya documentos en `queued` o `processing`.",
+        "parameters": [{ "$ref": "#/components/parameters/CourseId" }],
+        "responses": {
+          "200": {
+            "description": "Documentos del curso",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DocumentListResponse" } } }
+          },
+          "401": { "$ref": "#/components/responses/Error" },
+          "403": { "$ref": "#/components/responses/Error" },
+          "404": { "$ref": "#/components/responses/Error" }
+        }
+      },
       "post": {
         "tags": ["documents"],
         "operationId": "uploadCourseDocument",
@@ -52,7 +68,7 @@
                   "file": {
                     "type": "string",
                     "format": "binary",
-                    "description": "Archivo PDF, DOCX o PPTX",
+                    "description": "Archivo PDF, DOCX o PPTX. Máximo 20 MB (413 si lo supera; 415 si el tipo no está permitido).",
                     "contentMediaType": "application/octet-stream"
                   },
                   "title": { "type": "string", "maxLength": 200 }
@@ -221,6 +237,36 @@
             ]
           },
           "status": { "$ref": "#/components/schemas/DocumentStatus" }
+        }
+      },
+      "CourseDocument": {
+        "type": "object",
+        "required": ["document_id", "course_id", "filename", "mime_type", "size_bytes", "status", "created_at"],
+        "properties": {
+          "document_id": { "type": "string" },
+          "course_id": { "type": "string" },
+          "filename": { "type": "string" },
+          "title": { "type": ["string", "null"] },
+          "mime_type": {
+            "type": "string",
+            "enum": [
+              "application/pdf",
+              "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+              "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+            ]
+          },
+          "size_bytes": { "type": "integer", "minimum": 0 },
+          "status": { "$ref": "#/components/schemas/DocumentStatus" },
+          "error_message": { "type": ["string", "null"], "description": "Motivo del fallo; solo si `status` es `failed`" },
+          "created_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "DocumentListResponse": {
+        "type": "object",
+        "required": ["course_id", "documents"],
+        "properties": {
+          "course_id": { "type": "string" },
+          "documents": { "type": "array", "items": { "$ref": "#/components/schemas/CourseDocument" } }
         }
       },
       "StudentLevel": { "type": "string", "enum": ["basic", "intermediate", "advanced"], "description": "básico / intermedio / avanzado" },

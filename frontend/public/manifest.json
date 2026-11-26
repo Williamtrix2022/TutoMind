@@ -1,0 +1,19 @@
+{
+  "name": "TutoMind",
+  "short_name": "TutoMind",
+  "description": "Tutor inteligente y analítica predictiva de riesgo académico.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "lang": "es",
+  "background_color": "#03174C",
+  "theme_color": "#03174C",
+  "categories": ["education"],
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
