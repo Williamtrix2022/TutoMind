@@ -98,7 +98,7 @@ TutoMind es una plataforma web educativa (PWA) integrada con **Moodle** que ofre
 | [#13](https://github.com/Williamtrix2022/TutoMind/issues/13) | Modelos Pydantic v2 alineados con el contrato | Backend | @Jhon-Quiceno | ✅ | [#42](https://github.com/Williamtrix2022/TutoMind/pull/42) | |
 | [#14](https://github.com/Williamtrix2022/TutoMind/issues/14) | PostgreSQL + pgvector (docker-compose y migraciones) | Backend | @Jhon-Quiceno | ✅ | [#43](https://github.com/Williamtrix2022/TutoMind/pull/43) | |
 | [#15](https://github.com/Williamtrix2022/TutoMind/issues/15) | `POST /auth/login` con JWT y roles | Backend | @Jhon-Quiceno | ✅ | [#44](https://github.com/Williamtrix2022/TutoMind/pull/44) | |
-| [#16](https://github.com/Williamtrix2022/TutoMind/issues/16) | `POST /courses/{id}/documents`: ingesta y embeddings | Backend | @Jhon-Quiceno | ✅ | [#46](https://github.com/Williamtrix2022/TutoMind/pull/46) | Incluye el nuevo `GET` de lista y estados ([#38](https://github.com/Williamtrix2022/TutoMind/pull/38)) |
+| [#16](https://github.com/Williamtrix2022/TutoMind/issues/16) | `POST /courses/{id}/documents`: ingesta y embeddings | Backend | @Jhon-Quiceno | ✅ | [#49](https://github.com/Williamtrix2022/TutoMind/pull/49) | Incluye el nuevo `GET` de lista y estados ([#38](https://github.com/Williamtrix2022/TutoMind/pull/38)) |
 | [#17](https://github.com/Williamtrix2022/TutoMind/issues/17) | `POST /tutor/chat/stream`: RAG socrático con SSE | Backend | @Jhon-Quiceno | ⬜ | — | La más pesada |
 | [#18](https://github.com/Williamtrix2022/TutoMind/issues/18) | Detección de frustración y escalamiento a humano | Backend | @Jhon-Quiceno | ⬜ | — | |
 
@@ -227,7 +227,7 @@ Pendiente. Ver [`backend/README_BACKEND.md`](../backend/README_BACKEND.md) y `ba
 Más reciente primero.
 
 ### 2026-11-25
-- Backend: subida, extracción, chunking e indexación de documentos con embeddings en pgvector (#16) — [#46](https://github.com/Williamtrix2022/TutoMind/pull/46).
+- Backend: subida, extracción, chunking e indexación de documentos con embeddings en pgvector (#16) — [#49](https://github.com/Williamtrix2022/TutoMind/pull/49).
 - Backend: POST /auth/login con JWT y dependencias de rol (#15) — [#44](https://github.com/Williamtrix2022/TutoMind/pull/44).
 - Backend: PostgreSQL + pgvector, migraciones Alembic y seeds de demo (#14) — [#43](https://github.com/Williamtrix2022/TutoMind/pull/43).
 - Backend: modelos Pydantic v2 alineados con el contrato, con test de contrato (#13) — [#42](https://github.com/Williamtrix2022/TutoMind/pull/42).
