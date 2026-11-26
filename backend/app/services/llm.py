@@ -8,6 +8,7 @@ import math
 from collections.abc import AsyncIterator, Sequence
 from typing import Any, Protocol
 
+from fastapi import Depends
 from google import genai
 from google.genai import types
 
@@ -20,9 +21,7 @@ _EMBED_BATCH = 100
 class LLMClient(Protocol):
     async def embed(self, texts: Sequence[str], *, is_query: bool = False) -> list[list[float]]: ...
 
-    def generate_stream(
-        self, prompt: str, *, system: str | None = None
-    ) -> AsyncIterator[str]: ...
+    def generate_stream(self, prompt: str, *, system: str | None = None) -> AsyncIterator[str]: ...
 
 
 def normalize(vector: Sequence[float]) -> list[float]:
@@ -65,3 +64,12 @@ class GeminiClient:
         async for chunk in stream:
             if chunk.text:
                 yield chunk.text
+
+
+def get_llm_client(settings: Settings = Depends(get_settings)) -> LLMClient:
+    """Gemini when `GEMINI_API_KEY` is set; otherwise the offline client (dev and tests)."""
+    if settings.gemini_api_key:
+        return GeminiClient(settings)
+    from app.services.offline_llm import OfflineLLMClient
+
+    return OfflineLLMClient(settings)

@@ -1,12 +1,14 @@
 from collections.abc import Iterator
+from contextlib import nullcontext
 
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from app.core.config import Settings, get_settings
+from app.core.security import create_access_token
 from app.db.models import Course, Enrollment, User
-from app.db.session import get_session
+from app.db.session import get_session, get_session_factory
 from app.main import create_app
 
 # Shared database fixtures (embedded PostgreSQL + pgvector); see tests/db_fixtures.py.
@@ -31,6 +33,8 @@ def api(session: Session, settings: Settings) -> Iterator[TestClient]:  # noqa: 
     """The real app wired to the rollback-per-test database session."""
     app = create_app()
     app.dependency_overrides[get_session] = lambda: session
+    # Background jobs get the same rollback-per-test session instead of opening their own.
+    app.dependency_overrides[get_session_factory] = lambda: lambda: nullcontext(session)
     app.dependency_overrides[get_settings] = lambda: settings
     yield TestClient(app, raise_server_exceptions=False)
 
@@ -64,3 +68,14 @@ def make_user(session: Session):  # noqa: F811
         return user
 
     return _make
+
+
+@pytest.fixture
+def auth(settings: Settings):
+    """Factory: `Authorization` headers for a user."""
+
+    def _auth(user: User) -> dict[str, str]:
+        token, _ = create_access_token(user.id, user.role, settings)
+        return {"Authorization": f"Bearer {token}"}
+
+    return _auth

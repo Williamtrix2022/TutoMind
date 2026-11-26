@@ -37,15 +37,15 @@ TutoMind es una plataforma web educativa (PWA) integrada con **Moodle** que ofre
 
 ## 2. Estado actual
 
-**Progreso global: 15 de 29 tareas (52 %)**
+**Progreso global: 16 de 29 tareas (55 %)**
 
-`██████████░░░░░░░░░░` 52 %
+`███████████░░░░░░░░░` 55 %
 
 | Área | Estado | Detalle |
 |---|---|---|
 | **Contrato** (`docs/openapi.json`) | ✅ Listo | Los 5 endpoints definidos, más el `GET` de documentos propuesto en [#38](https://github.com/Williamtrix2022/TutoMind/pull/38) (pendiente de aprobación). Cambios solo por PR del contrato. |
 | **Frontend** | ✅ Sprint 1 completo | App Shell, cliente de API, mocks, chat, frustración, login y carga de documentos (todo contra mocks). Siguiente: Sprint 2, desde #19. |
-| **Backend** | 🔄 En curso | Base, modelos, base de datos y login listos y en `develop` (#12–#15). IA gratuita con Gemini lista ([#46](https://github.com/Williamtrix2022/TutoMind/pull/46)). Siguiente: #16 (ingesta y embeddings), luego #17 y #18. |
+| **Backend** | 🔄 En curso | Base, modelos, base de datos, login y documentos listos (#12–#16). IA gratuita con Gemini ([#46](https://github.com/Williamtrix2022/TutoMind/pull/46)); sin clave funciona con un cliente offline. Siguiente: #18 y #17 (tutor). |
 
 > El frontend funciona hoy **con mocks** (MSW) que imitan el contrato, así que nadie espera a nadie. La integración real es la tarea #21.
 
@@ -66,7 +66,7 @@ TutoMind es una plataforma web educativa (PWA) integrada con **Moodle** que ofre
 | Sprint | Fechas | Fase | Objetivo | Progreso |
 |---|---|---|---|---|
 | **Sprint 0** | hasta 24 nov | Fase 0 · Fundaciones | Contrato, esqueleto backend, Git y App Shell | ✅ 4 / 4 |
-| **Sprint 1** | 25 – 27 nov | Fase 1 · Núcleo | Auth, documentos, RAG y chat del tutor | 🔄 11 / 14 |
+| **Sprint 1** | 25 – 27 nov | Fase 1 · Núcleo | Auth, documentos, RAG y chat del tutor | 🔄 12 / 14 |
 | **Sprint 2** | 28 – 29 nov | Fase 2 · Analítica | Riesgo con XAI, temas, integración completa | ⬜ 0 / 6 |
 | **Entrega** | 30 nov | Fase 3 · Pulido | QA, despliegue, documentación y demo | ⬜ 0 / 5 |
 
@@ -98,7 +98,7 @@ TutoMind es una plataforma web educativa (PWA) integrada con **Moodle** que ofre
 | [#13](https://github.com/Williamtrix2022/TutoMind/issues/13) | Modelos Pydantic v2 alineados con el contrato | Backend | @Jhon-Quiceno | ✅ | [#42](https://github.com/Williamtrix2022/TutoMind/pull/45) | |
 | [#14](https://github.com/Williamtrix2022/TutoMind/issues/14) | PostgreSQL + pgvector (docker-compose y migraciones) | Backend | @Jhon-Quiceno | ✅ | [#43](https://github.com/Williamtrix2022/TutoMind/pull/45) | |
 | [#15](https://github.com/Williamtrix2022/TutoMind/issues/15) | `POST /auth/login` con JWT y roles | Backend | @Jhon-Quiceno | ✅ | [#44](https://github.com/Williamtrix2022/TutoMind/pull/45) | |
-| [#16](https://github.com/Williamtrix2022/TutoMind/issues/16) | `POST /courses/{id}/documents`: ingesta y embeddings | Backend | @Jhon-Quiceno | ⬜ | — | Incluye el nuevo `GET` de lista y estados ([#38](https://github.com/Williamtrix2022/TutoMind/pull/38)) |
+| [#16](https://github.com/Williamtrix2022/TutoMind/issues/16) | `POST /courses/{id}/documents`: ingesta y embeddings | Backend | @Jhon-Quiceno | ✅ | [#49](https://github.com/Williamtrix2022/TutoMind/pull/49) | Incluye el nuevo `GET` de lista y estados ([#38](https://github.com/Williamtrix2022/TutoMind/pull/38)) |
 | [#17](https://github.com/Williamtrix2022/TutoMind/issues/17) | `POST /tutor/chat/stream`: RAG socrático con SSE | Backend | @Jhon-Quiceno | ⬜ | — | La más pesada |
 | [#18](https://github.com/Williamtrix2022/TutoMind/issues/18) | Detección de frustración y escalamiento a humano | Backend | @Jhon-Quiceno | ⬜ | — | |
 
@@ -134,8 +134,8 @@ Esta es la vista clave para coordinar: **qué existe de cada endpoint en cada la
 | Endpoint | Contrato | Frontend | Backend | Integrado |
 |---|---|---|---|---|
 | `POST /api/v1/auth/login` | ✅ | ✅ pantalla + hook (mock) | ✅ #15 | ⬜ |
-| `POST /api/v1/courses/{course_id}/documents` | ✅ | ✅ pantalla con subida y progreso (mock) | ⬜ #16 | ⬜ |
-| `GET /api/v1/courses/{course_id}/documents` _(nuevo)_ | 🔄 propuesto en [#38](https://github.com/Williamtrix2022/TutoMind/pull/38) | ✅ lista y estados (mock) | ⬜ #16 | ⬜ |
+| `POST /api/v1/courses/{course_id}/documents` | ✅ | ✅ pantalla con subida y progreso (mock) | ✅ #16 | ⬜ |
+| `GET /api/v1/courses/{course_id}/documents` _(nuevo)_ | ✅ [#38](https://github.com/Williamtrix2022/TutoMind/pull/38) | ✅ lista y estados (mock) | ✅ #16 | ⬜ |
 | `POST /api/v1/tutor/chat/stream` | ✅ | ✅ chat + frustración + ayuda (mock) | ⬜ #17, #18 | ⬜ |
 | `GET /api/v1/analytics/courses/{course_id}/risk` | ✅ | 🔄 hook listo, pantalla en #19 | ⬜ #22 | ⬜ |
 | `GET /api/v1/analytics/courses/{course_id}/topics` | ✅ | 🔄 hook listo, pantalla en #20 | ⬜ #23 | ⬜ |
@@ -190,6 +190,8 @@ Pendiente. Ver [`backend/README_BACKEND.md`](../backend/README_BACKEND.md) y `ba
 | 2026-11-25 | Añadir `GET /courses/{id}/documents` al contrato ([#38](https://github.com/Williamtrix2022/TutoMind/pull/38)) | Sin él no hay lista ni estados de indexación. |
 | 2026-11-25 | Archivos: máximo 20 MB; tipos PDF, DOCX y PPTX | Cubre el material típico de clase; mismo límite en frontend y backend. |
 | 2026-11-25 | Subida con XHR en lugar de `fetch` | `fetch` no informa el progreso de subida. |
+| 2026-11-25 | Embeddings con `HashingEmbedder` (offline, sin API key) mientras no haya proveedor | Permite desarrollar y probar todo el RAG; es léxico, no semántico. Cambiarlo es un solo punto (`get_embedder`). Dimensión 1024. |
+| 2026-11-25 | Indexación con tareas en segundo plano de FastAPI | Sin infraestructura extra para el MVP. Límite conocido: si el servidor se reinicia a mitad, el documento queda en `processing`. |
 | 2026-11-25 | Login real: el `role` del cuerpo solo confirma el de la cuenta; el rol de las rutas se lee de la base de datos | Evita escalar privilegios con un token o un campo manipulado ([#15](https://github.com/Williamtrix2022/TutoMind/issues/15)). Para el demo, usuarios sembrados: `docente@tutomind.demo`, `ana@tutomind.demo`… con `demo12345`. |
 | 2026-11-26 | IA gratuita: Google Gemini (`gemini-2.5-flash` + `gemini-embedding-001` a 1024 dims) en lugar de la API de Anthropic | El MVP debe costar cero. El nivel gratuito puede usar los datos para mejorar modelos: **solo documentos de demo**. Detrás de `LLMClient` (`backend/app/services/llm.py`) para poder cambiar de proveedor. |
 
@@ -226,6 +228,7 @@ Pendiente. Ver [`backend/README_BACKEND.md`](../backend/README_BACKEND.md) y `ba
 Más reciente primero.
 
 ### 2026-11-25
+- Backend: subida, extracción, chunking e indexación de documentos con embeddings en pgvector (#16) — [#49](https://github.com/Williamtrix2022/TutoMind/pull/49).
 - Backend: POST /auth/login con JWT y dependencias de rol (#15) — [#44](https://github.com/Williamtrix2022/TutoMind/pull/44).
 - Backend: PostgreSQL + pgvector, migraciones Alembic y seeds de demo (#14) — [#43](https://github.com/Williamtrix2022/TutoMind/pull/43).
 - Backend: modelos Pydantic v2 alineados con el contrato, con test de contrato (#13) — [#42](https://github.com/Williamtrix2022/TutoMind/pull/42).
