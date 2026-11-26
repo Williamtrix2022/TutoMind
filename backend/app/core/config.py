@@ -21,6 +21,8 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+psycopg://tutomind:tutomind@localhost:5432/tutomind"
     # Size of the embedding vectors stored in pgvector. Changing it needs a new migration.
     embedding_dimensions: int = 1024
+    # `hashing` = deterministic, offline, no API key. Real providers plug in here later.
+    embedding_provider: str = "hashing"
 
     # Signs access tokens (HS256). The default only exists for local development.
     jwt_secret: str = DEV_JWT_SECRET

@@ -39,6 +39,7 @@ Variables de entorno o archivo `.env` (ver `.env.example`). Hoy:
 | `ACCESS_TOKEN_EXPIRES_SECONDS` | `3600` | Vigencia del token |
 | `DATABASE_URL` | `postgresql+psycopg://tutomind:tutomind@localhost:5432/tutomind` | Conexión a PostgreSQL |
 | `EMBEDDING_DIMENSIONS` | `1024` | Tamaño de los vectores |
+| `EMBEDDING_PROVIDER` | `hashing` | Proveedor de embeddings (`hashing` = offline) |
 
 ## Base de datos
 PostgreSQL 16 + pgvector. Credenciales de desarrollo en `docker-compose.yml`.
@@ -59,6 +60,13 @@ python -m app.db.seed              # 1 curso (id `demo`), 1 docente y 5 estudian
 - `role` en el login es solo demo: puede **confirmar** el rol de la cuenta, nunca otorgar otro.
 - En endpoints: `Depends(get_current_user)` o `Depends(require_role("teacher"))` (`app/api/deps.py`). El rol se lee de la base de datos, no del token.
 - `JWT_SECRET` es obligatorio (aleatorio, ≥ 32 caracteres) cuando `ENVIRONMENT` no es `development`; la app no arranca sin él.
+
+## Documentos (RAG)
+- `POST /api/v1/courses/{course_id}/documents` (solo docente matriculado en el curso): multipart `file` (+ `title` opcional). Responde `202` y procesa en segundo plano.
+- `GET /api/v1/courses/{course_id}/documents`: lista los más recientes primero, con su estado `queued → processing → indexed | failed` (y `error_message` si falló).
+- Validaciones: PDF/DOCX/PPTX (por MIME o extensión) y que el contenido coincida con el tipo → `415`; máximo 20 MB → `413`; archivo vacío o sin nombre → `422`; curso inexistente → `404`; no matriculado → `403`.
+- Pipeline (`app/services/`): extracción de texto (`pypdf`, `python-docx`, `python-pptx`) → chunks de ~1000 caracteres con solape → embeddings → pgvector. Cualquier fallo deja el documento en `failed` con un motivo legible; los detalles internos solo van al log.
+- `EMBEDDING_PROVIDER=hashing` (por defecto): embeddings deterministas y offline, **sin API key**. Son léxicos (comparten vocabulario), no semánticos; un proveedor real se conecta en `get_embedder` sin tocar el resto.
 
 ## Errores
 Todo error se devuelve con el formato `ErrorResponse` del contrato: `{ "code", "message", "details"? }`.

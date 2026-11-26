@@ -41,6 +41,9 @@ def canon(node: dict[str, Any], defs: dict[str, Any]) -> dict[str, Any]:
         siblings = {k: v for k, v in node.items() if k != "$ref"}
         return canon({**resolved, **siblings}, defs)
 
+    if node.get("contentMediaType") == "application/octet-stream":
+        # OpenAPI 3.1 spells a binary file this way; 3.0 (and our contract) uses `format: binary`.
+        node = {**node, "format": node.get("format", "binary")}
     node = {k: v for k, v in node.items() if k not in _IGNORED}
 
     if "anyOf" in node:
