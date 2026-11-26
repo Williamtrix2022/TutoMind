@@ -5,9 +5,10 @@ from fastapi import APIRouter, BackgroundTasks, Depends, Form, UploadFile
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.api.access import course_for_teacher
 from app.api.deps import require_role
 from app.core.errors import ApiError
-from app.db.models import Course, Document, Enrollment, User
+from app.db.models import Document, User
 from app.db.session import SessionFactory, get_session, get_session_factory
 from app.schemas import CourseDocument, DocumentListResponse, DocumentUploadResponse, ErrorResponse
 from app.schemas.documents import DOCX_MIME, PDF_MIME, PPTX_MIME
@@ -30,15 +31,6 @@ _ERRORS = {
     403: {"model": ErrorResponse},
     404: {"model": ErrorResponse},
 }
-
-
-def _course_for_teacher(course_id: str, user: User, session: Session) -> Course:
-    course = session.get(Course, course_id)
-    if course is None:
-        raise ApiError(404, "not_found", "El curso no existe.")
-    if session.get(Enrollment, (course_id, user.id)) is None:
-        raise ApiError(403, "forbidden", "No tienes permiso sobre este curso.")
-    return course
 
 
 def _to_contract(row: Document) -> CourseDocument:
@@ -90,7 +82,7 @@ def upload_document(
     llm: LLMClient = Depends(get_llm_client),
     session_factory: SessionFactory = Depends(get_session_factory),
 ) -> DocumentUploadResponse:
-    _course_for_teacher(course_id, user, session)
+    course_for_teacher(session, user, course_id)
 
     filename = _safe_filename(file.filename)
     mime = _resolve_mime(filename, file.content_type)
@@ -140,7 +132,7 @@ def list_documents(
     user: User = Depends(require_role("teacher")),
     session: Session = Depends(get_session),
 ) -> DocumentListResponse:
-    _course_for_teacher(course_id, user, session)
+    course_for_teacher(session, user, course_id)
     rows = session.scalars(
         select(Document).where(Document.course_id == course_id).order_by(Document.created_at.desc())
     ).all()

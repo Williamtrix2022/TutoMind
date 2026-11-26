@@ -5,6 +5,7 @@ from sqlalchemy import (
     BigInteger,
     CheckConstraint,
     DateTime,
+    Float,
     ForeignKey,
     Index,
     Integer,
@@ -29,6 +30,7 @@ MIME_TYPES = (
 MESSAGE_ROLES = ("user", "assistant")
 TICKET_REASONS = ("student_requested", "persistent_frustration", "repeated_failure")
 TICKET_STATUSES = ("open", "resolved")
+EVENT_TYPES = ("login", "grade", "submission", "missed_deadline")
 
 
 def _in(column: str, values: tuple[str, ...]) -> str:
@@ -133,7 +135,13 @@ class Conversation(Base):
 
 class Message(Base):
     __tablename__ = "messages"
-    __table_args__ = (CheckConstraint(_in("role", MESSAGE_ROLES), name="ck_messages_role"),)
+    __table_args__ = (
+        CheckConstraint(_in("role", MESSAGE_ROLES), name="ck_messages_role"),
+        CheckConstraint(
+            "frustration_score IS NULL OR (frustration_score >= 0 AND frustration_score <= 1)",
+            name="ck_messages_frustration_score",
+        ),
+    )
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     conversation_id: Mapped[str] = mapped_column(
@@ -141,6 +149,8 @@ class Message(Base):
     )
     role: Mapped[str] = mapped_column(String(20))
     content: Mapped[str] = mapped_column(Text)
+    # Frustration of a student message (0-1); NULL for tutor replies and older messages.
+    frustration_score: Mapped[float | None] = mapped_column(Float)
     created_at: Mapped[datetime] = _created_at()
 
 
@@ -170,3 +180,26 @@ class SupportTicket(Base):
     reason: Mapped[str] = mapped_column(String(30))
     status: Mapped[str] = mapped_column(String(20), default="open", server_default="open")
     created_at: Mapped[datetime] = _created_at()
+
+
+class StudentEvent(Base):
+    """Activity of a student in the LMS (Moodle): logins, grades, submissions, missed deadlines.
+
+    Feeds the risk model. For `grade`, `value` is the mark and `scale` its maximum.
+    """
+
+    __tablename__ = "student_events"
+    __table_args__ = (
+        CheckConstraint(_in("type", EVENT_TYPES), name="ck_student_events_type"),
+        CheckConstraint("scale IS NULL OR scale > 0", name="ck_student_events_scale"),
+        Index("ix_student_events_course_user_time", "course_id", "user_id", "occurred_at"),
+    )
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    course_id: Mapped[str] = mapped_column(ForeignKey("courses.id", ondelete="CASCADE"))
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    type: Mapped[str] = mapped_column(String(30))
+    value: Mapped[float | None] = mapped_column(Float)
+    scale: Mapped[float | None] = mapped_column(Float)
+    occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    source: Mapped[str] = mapped_column(String(20), default="moodle", server_default="moodle")

@@ -86,6 +86,14 @@ python -m app.db.seed              # 1 curso (id `demo`), 1 docente y 5 estudian
 - Límites: 40 mensajes por petición y 8000 caracteres por mensaje (`422`).
 - Sin `GEMINI_API_KEY` responde `OfflineLLMClient` (reglas, no razona); con clave, Gemini.
 
+## Riesgo académico con XAI (#22)
+- `GET /api/v1/analytics/courses/{course_id}/risk[?level=green|yellow|red]` (solo docente matriculado). Estudiantes de mayor a menor riesgo; `level` filtra la lista pero el `summary` siempre cuenta todo el curso.
+- Modelo **de reglas ponderadas**, no entrenado: no hay histórico etiquetado y el docente debe poder *leer* por qué se marca a un estudiante. El puntaje es literalmente lo que suman los factores: `risk_score = clamp(0.5 + Σ impact)`, con `impact = peso × severidad` (severidad en [−1, 1]; positivo = más riesgo).
+- Factores y pesos (`app/services/risk.py`): días sin ingresar 0.30, promedio de notas 0.30, tareas sin entregar 0.15, frustración con el tutor 0.10, uso del tutor 0.10, ayudas abiertas al docente 0.05. Un factor sin datos no aparece; siempre hay al menos uno.
+- Niveles: verde `< 0.40`, amarillo `< 0.65`, rojo `≥ 0.65`. Nota proyectada (escala 5): promedio de notas (3.0 si no hay) menos 0.25 por cada 0.1 de impacto de los demás factores. **Pesos y umbrales son una primera calibración**: ajustarlos con datos reales.
+- Los datos salen de `student_events` (accesos, notas, entregas, plazos vencidos; los alimenta Moodle en #24), de las preguntas al tutor (con su `frustration_score`, que ahora se guarda) y de los tickets abiertos. Ventanas: notas 90 días, entregas 30, tutor 14.
+- `python -m app.db.seed` incluye actividad de demostración: un estudiante verde, dos amarillos y dos rojos (uno de ellos nunca visto).
+
 ## Errores
 Todo error se devuelve con el formato `ErrorResponse` del contrato: `{ "code", "message", "details"? }`.
 Para fallar desde un endpoint: `raise ApiError(status, "codigo", "Mensaje")` (`app/core/errors.py`).
