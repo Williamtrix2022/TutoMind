@@ -12,7 +12,7 @@ CONTRACT = load_contract()
 GENERATED = create_app().openapi()
 METHODS = {"get", "post", "put", "patch", "delete"}
 # Responses the code returns but the contract does not list yet (gaps to fix in a contract PR).
-UNDOCUMENTED_OK = {"404", "422"}
+UNDOCUMENTED_OK = {"403", "404", "422"}
 OPERATIONS = [
     (path, method)
     for path, item in CONTRACT["paths"].items()
@@ -36,13 +36,19 @@ def request_body(operation: dict, spec: dict) -> dict | None:
     return {"content_type": content_type, "schema": canon(media["schema"], schemas)}
 
 
-def response_schemas(operation: dict, contract: dict) -> dict[str, str | None]:
-    result = {}
+def response_bodies(operation: dict, spec: dict) -> dict[str, tuple[str, dict] | None]:
+    """Per status: content type + fully resolved schema (None when there is no body)."""
+    schemas = spec["components"]["schemas"]
+    result: dict[str, tuple[str, dict] | None] = {}
     for status, response in operation["responses"].items():
         if "$ref" in response:
-            response = contract["components"]["responses"][response["$ref"].rsplit("/", 1)[-1]]
+            response = spec["components"]["responses"][response["$ref"].rsplit("/", 1)[-1]]
         content = response.get("content", {})
-        result[status] = schema_name(next(iter(content.values()), {}))
+        if not content:
+            result[status] = None
+            continue
+        content_type, media = next(iter(content.items()))
+        result[status] = (content_type, canon(media["schema"], schemas))
     return result
 
 
@@ -62,10 +68,17 @@ def test_operation_matches_the_contract(path, method):
         assert actual_body["content_type"] == expected_body["content_type"]
         assert compare(expected_body["schema"], actual_body["schema"], "body") == []
 
-    expected_responses = response_schemas(expected, CONTRACT)
-    actual_responses = response_schemas(actual, GENERATED)
-    # Only the known gaps may be extra (404 unknown course, 422 validation); nothing else.
+    expected_responses = response_bodies(expected, CONTRACT)
+    actual_responses = response_bodies(actual, GENERATED)
+    # Only known gaps may be extra (403/404 course access, 422 validation); nothing else.
     for status in UNDOCUMENTED_OK:
         if status not in expected_responses:
             actual_responses.pop(status, None)
-    assert actual_responses == expected_responses
+    assert set(actual_responses) == set(expected_responses)
+    for status, wanted in expected_responses.items():
+        got = actual_responses[status]
+        if wanted is None:
+            assert got is None
+            continue
+        assert got is not None and got[0] == wanted[0], f"{status}: content type"
+        assert compare(wanted[1], got[1], f"response {status}") == []
