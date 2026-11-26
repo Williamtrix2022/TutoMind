@@ -175,3 +175,17 @@ def test_frustration_score_must_be_between_0_and_1(session, score):
 
     with pytest.raises(IntegrityError):
         session.flush()
+
+
+def test_a_message_can_carry_a_topic(session):
+    make_course(session)
+    session.add(User(id="s1", name="A", email="a@x.edu", password_hash="h", role="student"))
+    session.flush()
+    session.add(Conversation(id="conv", course_id="c1", student_id="s1"))
+    session.flush()
+    message = Message(conversation_id="conv", role="user", content="x", topic="Derivadas")
+    session.add(message)
+    session.flush()
+    session.refresh(message)
+
+    assert message.topic == "Derivadas"

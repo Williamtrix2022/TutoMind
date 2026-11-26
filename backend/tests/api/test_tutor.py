@@ -116,6 +116,31 @@ class TestStreaming:
         assert stored[0].role == "user" and stored[0].frustration_score >= 0.5
         assert stored[1].role == "assistant" and stored[1].frustration_score is None
 
+    def test_the_topic_of_the_question_comes_from_the_matching_material(
+        self, api, session, student, auth, spy
+    ):
+        add_material(session, "c1", "d1", "Guía de derivadas", "la derivada mide el cambio")
+
+        chat(api, student, auth, text="¿cómo se calcula la derivada?")
+
+        stored = session.scalars(select(Message).order_by(Message.id)).all()
+        assert (stored[0].role, stored[0].topic) == ("user", "Guía de derivadas")
+        assert stored[1].topic is None  # the tutor's reply has no topic
+
+    def test_a_question_the_material_does_not_cover_is_filed_under_other_topics(
+        self, api, session, student, auth, spy
+    ):
+        add_material(session, "c1", "d1", "Biología", "la mitocondria produce energía")
+
+        chat(api, student, auth, text="¿cuándo es el examen final?")
+
+        assert session.scalars(select(Message).order_by(Message.id)).first().topic == "Otros temas"
+
+    def test_asking_for_a_human_is_not_a_topic(self, api, session, student, auth, spy):
+        chat(api, student, auth, request_human_help=True)
+
+        assert session.scalars(select(Message).order_by(Message.id)).first().topic is None
+
     def test_an_existing_conversation_is_continued(self, api, session, student, auth, spy):
         first = parse_sse(chat(api, student, auth).text)[-1]["conversation_id"]
 

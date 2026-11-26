@@ -37,15 +37,15 @@ TutoMind es una plataforma web educativa (PWA) integrada con **Moodle** que ofre
 
 ## 2. Estado actual
 
-**Progreso global: 22 de 29 tareas (76 %)**
+**Progreso global: 23 de 29 tareas (79 %)**
 
-`███████████████░░░░░` 76 %
+`████████████████░░░░` 79 %
 
 | Área | Estado | Detalle |
 |---|---|---|
 | **Contrato** (`docs/openapi.json`) | ✅ Listo | Los 5 endpoints definidos, más el `GET` de documentos ([#38](https://github.com/Williamtrix2022/TutoMind/pull/38)). Cambios solo por PR del contrato. |
 | **Frontend** | ✅ Sprint 2 completo | Todas las pantallas (login, tutor, documentos, riesgo, temas e inicios por rol) con carga, vacío y error, y reintentos solo ante fallos de red o 5xx. Habla con el backend real por defecto (`NEXT_PUBLIC_USE_MOCKS=false`). Riesgo y temas esperan los endpoints #22 y #23. |
-| **Backend** | 🔄 En curso | Sprint 1 y #22 listos: auth, documentos, tutor, frustración, tickets y riesgo con XAI (`GET .../risk`). Siguiente: #23 (temas) y #24 (Moodle). Funciona sin API key (cliente offline). |
+| **Backend** | 🔄 En curso | Sprint 1, #22 y #23 listos: auth, documentos, tutor, frustración, tickets, riesgo con XAI y termómetro del aula. Todos los endpoints del contrato están implementados. Falta #24 (Moodle). Funciona sin API key (cliente offline). |
 
 > Login, documentos y tutor ya se probaron contra el backend real (ver sección 6). Riesgo y temas siguen sin endpoint: mientras tanto el frontend muestra su estado de error con «Reintentar», o se pueden ver con los mocks (`NEXT_PUBLIC_USE_MOCKS=true`).
 
@@ -67,7 +67,7 @@ TutoMind es una plataforma web educativa (PWA) integrada con **Moodle** que ofre
 |---|---|---|---|---|
 | **Sprint 0** | hasta 24 nov | Fase 0 · Fundaciones | Contrato, esqueleto backend, Git y App Shell | ✅ 4 / 4 |
 | **Sprint 1** | 25 – 27 nov | Fase 1 · Núcleo | Auth, documentos, RAG y chat del tutor | ✅ 14 / 14 |
-| **Sprint 2** | 28 – 29 nov | Fase 2 · Analítica | Riesgo con XAI, temas, integración completa | 🔄 4 / 6 |
+| **Sprint 2** | 28 – 29 nov | Fase 2 · Analítica | Riesgo con XAI, temas, integración completa | 🔄 5 / 6 |
 | **Entrega** | 30 nov | Fase 3 · Pulido | QA, despliegue, documentación y demo | ⬜ 0 / 5 |
 
 ---
@@ -110,7 +110,7 @@ TutoMind es una plataforma web educativa (PWA) integrada con **Moodle** que ofre
 | [#20](https://github.com/Williamtrix2022/TutoMind/issues/20) | Termómetro del aula: temas y alertas de confusión | Frontend | @Williamtrix2022 | ✅ | [#54](https://github.com/Williamtrix2022/TutoMind/pull/54) |
 | [#21](https://github.com/Williamtrix2022/TutoMind/issues/21) | Integración real con el backend y manejo de errores | Frontend | @Williamtrix2022 | ✅ | [#56](https://github.com/Williamtrix2022/TutoMind/pull/56) |
 | [#22](https://github.com/Williamtrix2022/TutoMind/issues/22) | Servicio de riesgo con explicabilidad (XAI) | Backend | @Jhon-Quiceno | ✅ | [#58](https://github.com/Williamtrix2022/TutoMind/pull/58) |
-| [#23](https://github.com/Williamtrix2022/TutoMind/issues/23) | `GET /analytics/.../topics`: agregación y confusión | Backend | @Jhon-Quiceno | ⬜ | — |
+| [#23](https://github.com/Williamtrix2022/TutoMind/issues/23) | `GET /analytics/.../topics`: agregación y confusión | Backend | @Jhon-Quiceno | ✅ | [#59](https://github.com/Williamtrix2022/TutoMind/pull/59) |
 | [#24](https://github.com/Williamtrix2022/TutoMind/issues/24) | Integración con Moodle (eventos y enlaces) | Backend | @Jhon-Quiceno | ⬜ | — |
 
 ### Entrega · 30 nov ⬜
@@ -138,7 +138,7 @@ Esta es la vista clave para coordinar: **qué existe de cada endpoint en cada la
 | `GET /api/v1/courses/{course_id}/documents` _(nuevo)_ | ✅ [#38](https://github.com/Williamtrix2022/TutoMind/pull/38) | ✅ lista y estados | ✅ #16 | 🔄 lista y estados correctos; 403 para estudiantes |
 | `POST /api/v1/tutor/chat/stream` | ✅ | ✅ chat + frustración + ayuda | ✅ #17, #18 | 🔄 SSE real con `token`, `sources`, `frustration` y `done` (cliente offline) |
 | `GET /api/v1/analytics/courses/{course_id}/risk` | ✅ | ✅ dashboard (#19) | ✅ #22 | 🔄 backend listo; falta probar en el navegador |
-| `GET /api/v1/analytics/courses/{course_id}/topics` | ✅ | ✅ termómetro (#20) | ⬜ #23 | ⬜ el backend responde 404 |
+| `GET /api/v1/analytics/courses/{course_id}/topics` | ✅ | ✅ termómetro (#20) | ✅ #23 | 🔄 backend listo; falta probar en el navegador |
 
 «🔄» = el backend real responde lo que el contrato promete (probado con peticiones reales); falta el recorrido manual de la interfaz contra el backend. Pasa a ✅ cuando se haga en #25.
 
@@ -214,6 +214,7 @@ Con el backend encendido, entra con los usuarios demo de arriba.
 | 2026-11-25 | Petición de ayuda humana responde con un acuse fijo, sin llamar al modelo | Ahorra costo y es predecible; el evento `escalation` trae `ticket_id`. |
 | 2026-11-25 | Errores de la API son JSON (`ErrorResponse`) también en el endpoint SSE | El frontend los trata igual que el resto; el evento SSE `error` no incluye detalles internos. |
 | 2026-11-26 | Riesgo con reglas ponderadas y explicables (no un modelo entrenado) | No hay histórico etiquetado y el docente debe poder leer por qué se marca a alguien. `risk_score = 0.5 + Σ impact`; verde < 0.40 ≤ amarillo < 0.65 ≤ rojo. Pesos y umbrales son una primera calibración (ver README del backend). |
+| 2026-11-26 | El tema de una pregunta es el documento del curso que la respalda (sin modelo) | Gratis, explicable y funciona sin API key. Es grueso (1 documento = 1 tema); si hace falta más detalle, se sustituye `topic_for` por un extractor con Gemini. Alerta de confusión: ≥ 0.5 con ≥ 3 preguntas. |
 | 2026-11-25 | Indexación con tareas en segundo plano de FastAPI | Sin infraestructura extra para el MVP. Límite conocido: si el servidor se reinicia a mitad, el documento queda en `processing`. |
 | 2026-11-25 | Login real: el `role` del cuerpo solo confirma el de la cuenta; el rol de las rutas se lee de la base de datos | Evita escalar privilegios con un token o un campo manipulado ([#15](https://github.com/Williamtrix2022/TutoMind/issues/15)). Para el demo, usuarios sembrados: `docente@tutomind.demo`, `ana@tutomind.demo`… con `demo12345`. |
 | 2026-11-26 | Mocks apagados por defecto; la interfaz habla con el backend real | Es la integración (#21). Los mocks siguen disponibles con `NEXT_PUBLIC_USE_MOCKS=true` para trabajar sin backend. |
@@ -255,6 +256,7 @@ Con el backend encendido, entra con los usuarios demo de arriba.
 Más reciente primero.
 
 ### 2026-11-26
+- Backend: temas y termómetro del aula con alertas de confusión; tema por pregunta guardado en cada mensaje (#23) — [#59](https://github.com/Williamtrix2022/TutoMind/pull/59).
 - Backend: riesgo académico con explicabilidad XAI, modelo de reglas ponderadas, y guardado de la frustración por mensaje (#22) — [#58](https://github.com/Williamtrix2022/TutoMind/pull/58).
 - Integración real: mocks apagados por defecto, error de red legible y reintentos solo ante fallos recuperables (#21) — [#56](https://github.com/Williamtrix2022/TutoMind/pull/56).
 - Inicio rediseñado para estudiante (orbe, preguntas sugeridas, guía del tutor, bloque de estudio) y docente (mosaico con datos reales) — [#55](https://github.com/Williamtrix2022/TutoMind/pull/55).
