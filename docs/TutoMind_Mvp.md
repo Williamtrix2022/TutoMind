@@ -108,7 +108,7 @@ TutoMind es una plataforma web educativa (PWA) integrada con **Moodle** que ofre
 |---|---|---|---|---|---|
 | [#19](https://github.com/Williamtrix2022/TutoMind/issues/19) | Dashboard de riesgo con semáforo y panel XAI | Frontend | @Williamtrix2022 | ✅ | [#53](https://github.com/Williamtrix2022/TutoMind/pull/53) |
 | [#20](https://github.com/Williamtrix2022/TutoMind/issues/20) | Termómetro del aula: temas y alertas de confusión | Frontend | @Williamtrix2022 | ✅ | [#54](https://github.com/Williamtrix2022/TutoMind/pull/54) |
-| [#21](https://github.com/Williamtrix2022/TutoMind/issues/21) | Integración real con el backend y manejo de errores | Frontend | @Williamtrix2022 | ✅ | PR_21 |
+| [#21](https://github.com/Williamtrix2022/TutoMind/issues/21) | Integración real con el backend y manejo de errores | Frontend | @Williamtrix2022 | ✅ | [#56](https://github.com/Williamtrix2022/TutoMind/pull/56) |
 | [#22](https://github.com/Williamtrix2022/TutoMind/issues/22) | Servicio de riesgo con explicabilidad (XAI) | Backend | @Jhon-Quiceno | ⬜ | — |
 | [#23](https://github.com/Williamtrix2022/TutoMind/issues/23) | `GET /analytics/.../topics`: agregación y confusión | Backend | @Jhon-Quiceno | ⬜ | — |
 | [#24](https://github.com/Williamtrix2022/TutoMind/issues/24) | Integración con Moodle (eventos y enlaces) | Backend | @Jhon-Quiceno | ⬜ | — |
@@ -254,7 +254,7 @@ Con el backend encendido, entra con los usuarios demo de arriba.
 Más reciente primero.
 
 ### 2026-11-26
-- Integración real: mocks apagados por defecto, error de red legible y reintentos solo ante fallos recuperables (#21) — PR_21.
+- Integración real: mocks apagados por defecto, error de red legible y reintentos solo ante fallos recuperables (#21) — [#56](https://github.com/Williamtrix2022/TutoMind/pull/56).
 - Inicio rediseñado para estudiante (orbe, preguntas sugeridas, guía del tutor, bloque de estudio) y docente (mosaico con datos reales) — [#55](https://github.com/Williamtrix2022/TutoMind/pull/55).
 - Termómetro del aula con alertas de confusión (#20) — [#54](https://github.com/Williamtrix2022/TutoMind/pull/54).
 - Dashboard de riesgo con semáforo y panel XAI, logo nuevo y riesgo medio en amarillo (#19) — [#53](https://github.com/Williamtrix2022/TutoMind/pull/53).
