@@ -13,6 +13,8 @@ interface RiskDonutProps {
   hovered: RiskLevel | null;
   onHover: (level: RiskLevel | null) => void;
   onSelect: (level: RiskLevel | "all") => void;
+  /** Tamaño y márgenes del contenedor. */
+  className?: string;
 }
 
 const RADIUS = 78;
@@ -21,7 +23,7 @@ const px = (percent: number) => (percent / 100) * CIRCUMFERENCE;
 const GAP = 1.6; // separación entre tramos, en % del anillo
 
 /** El semáforo como anillo: cada tramo es un nivel de riesgo y también un filtro. */
-export function RiskDonut({ summary, active, hovered, onHover, onSelect }: RiskDonutProps) {
+export function RiskDonut({ summary, active, hovered, onHover, onSelect, className = "w-48 sm:w-52" }: RiskDonutProps) {
   const total = summary ? RISK_ORDER.reduce((sum, level) => sum + summary[level], 0) : 0;
   const focus = hovered ?? (active === "all" ? null : active);
 
@@ -35,7 +37,7 @@ export function RiskDonut({ summary, active, hovered, onHover, onSelect }: RiskD
   });
 
   return (
-    <div className="relative mx-auto aspect-square w-48 sm:w-52" aria-hidden>
+    <div className={`relative mx-auto aspect-square ${className}`} aria-hidden>
       <svg viewBox="0 0 200 200" className="size-full -rotate-90">
         <circle cx="100" cy="100" r={RADIUS} fill="none" stroke="currentColor" strokeWidth="18" className="text-line" />
         {!summary && (

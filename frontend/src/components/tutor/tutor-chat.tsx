@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { DEMO_COURSE_ID } from "@/lib/config";
 import { useTutorChat } from "@/lib/hooks/use-tutor-chat";
+import { TUTOR_SUGGESTIONS } from "@/lib/tutor-suggestions";
 import { spring, tap } from "@/lib/motion";
 import type { StudentLevel } from "@/lib/types";
 import { ChatComposer } from "./chat-composer";
@@ -19,13 +20,7 @@ const LEVELS: { value: StudentLevel; label: string }[] = [
   { value: "advanced", label: "Avanzado" },
 ];
 
-const SUGGESTIONS = [
-  "Explícame la derivada por definición",
-  "Ponme un ejercicio de integrales",
-  "No entiendo la regla de la cadena",
-];
-
-export function TutorChat() {
+export function TutorChat({ initialQuestion }: { initialQuestion?: string }) {
   const [level, setLevel] = useState<StudentLevel>("basic");
   const { messages, isStreaming, frustration, escalation, send, stop, requestHelp, reset } = useTutorChat({
     courseId: DEMO_COURSE_ID,
@@ -52,6 +47,15 @@ export function TutorChat() {
   }, [messages, frustration, escalation]);
 
   const isEmpty = messages.length === 0;
+
+  // Pregunta que llega desde el inicio (?q=...): se envía una sola vez y se limpia la URL.
+  const sentInitial = useRef(false);
+  useEffect(() => {
+    if (!initialQuestion || sentInitial.current) return;
+    sentInitial.current = true;
+    window.history.replaceState(null, "", "/tutor");
+    void send(initialQuestion);
+  }, [initialQuestion, send]);
 
   return (
     <div className="flex min-h-[calc(100dvh-9rem)] flex-col md:min-h-[calc(100dvh-4rem)]">
@@ -108,7 +112,7 @@ export function TutorChat() {
               <p className="text-sm text-muted">Escribe una duda o empieza con una de estas:</p>
             </div>
             <ul className="flex flex-wrap justify-center gap-2">
-              {SUGGESTIONS.map((suggestion) => (
+              {TUTOR_SUGGESTIONS.map((suggestion) => (
                 <li key={suggestion}>
                   <motion.button
                     type="button"
