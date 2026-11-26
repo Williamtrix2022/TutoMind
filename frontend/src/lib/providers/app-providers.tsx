@@ -4,6 +4,7 @@ import { MotionConfig } from "motion/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
+import { retryDelay, shouldRetry } from "@/lib/api/errors";
 import { UNAUTHORIZED_EVENT } from "@/lib/api/events";
 import type { components } from "@/lib/api/schema";
 import { getToken, setToken } from "@/lib/api/token-store";
@@ -70,7 +71,7 @@ function isUser(value: unknown): value is User {
 
 export function AppProviders({ children }: { children: ReactNode }) {
   const [queryClient] = useState(
-    () => new QueryClient({ defaultOptions: { queries: { staleTime: 30_000, retry: 1 } } }),
+    () => new QueryClient({ defaultOptions: { queries: { staleTime: 30_000, retry: shouldRetry, retryDelay } } }),
   );
   const [theme, setTheme] = useState<Theme>("dark");
   const [role, setRoleState] = useState<Role>("student");
