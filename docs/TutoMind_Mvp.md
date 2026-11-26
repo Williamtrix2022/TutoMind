@@ -37,14 +37,14 @@ TutoMind es una plataforma web educativa (PWA) integrada con **Moodle** que ofre
 
 ## 2. Estado actual
 
-**Progreso global: 19 de 29 tareas (66 %)**
+**Progreso global: 20 de 29 tareas (69 %)**
 
-`█████████████░░░░░░░` 66 %
+`██████████████░░░░░░` 69 %
 
 | Área | Estado | Detalle |
 |---|---|---|
 | **Contrato** (`docs/openapi.json`) | ✅ Listo | Los 5 endpoints definidos, más el `GET` de documentos propuesto en [#38](https://github.com/Williamtrix2022/TutoMind/pull/38) (pendiente de aprobación). Cambios solo por PR del contrato. |
-| **Frontend** | 🔄 Sprint 2 en curso | Sprint 1 completo y dashboard de riesgo con semáforo y panel XAI (#19), todo contra mocks. Siguiente: #20 (termómetro del aula). |
+| **Frontend** | 🔄 Sprint 2 en curso | Sprint 1 completo y dashboard de riesgo (#19) y termómetro del aula (#20), todo contra mocks. Siguiente: #21 (integración real con el backend). |
 | **Backend** | 🔄 En curso | Sprint 1 completo (#12–#18): auth, documentos, tutor con RAG/SSE, frustración y tickets. Funciona sin API key (cliente offline) y con Gemini cuando haya clave. Siguiente: Sprint 2 desde #22 (ver `docs/plan/SPRINT2_BACKEND.md`). |
 
 > El frontend funciona hoy **con mocks** (MSW) que imitan el contrato, así que nadie espera a nadie. La integración real es la tarea #21.
@@ -107,7 +107,7 @@ TutoMind es una plataforma web educativa (PWA) integrada con **Moodle** que ofre
 | # | Tarea | Área | Responsable | Estado | PR |
 |---|---|---|---|---|---|
 | [#19](https://github.com/Williamtrix2022/TutoMind/issues/19) | Dashboard de riesgo con semáforo y panel XAI | Frontend | @Williamtrix2022 | ✅ | [#53](https://github.com/Williamtrix2022/TutoMind/pull/53) |
-| [#20](https://github.com/Williamtrix2022/TutoMind/issues/20) | Termómetro del aula: temas y alertas de confusión | Frontend | @Williamtrix2022 | ⬜ | — |
+| [#20](https://github.com/Williamtrix2022/TutoMind/issues/20) | Termómetro del aula: temas y alertas de confusión | Frontend | @Williamtrix2022 | ✅ | [#54](https://github.com/Williamtrix2022/TutoMind/pull/54) |
 | [#21](https://github.com/Williamtrix2022/TutoMind/issues/21) | Integración real con el backend y manejo de errores | Frontend | @Williamtrix2022 | ⬜ | — |
 | [#22](https://github.com/Williamtrix2022/TutoMind/issues/22) | Servicio de riesgo con explicabilidad (XAI) | Backend | @Jhon-Quiceno | ⬜ | — |
 | [#23](https://github.com/Williamtrix2022/TutoMind/issues/23) | `GET /analytics/.../topics`: agregación y confusión | Backend | @Jhon-Quiceno | ⬜ | — |
