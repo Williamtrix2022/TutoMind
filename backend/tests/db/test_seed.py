@@ -101,3 +101,11 @@ def test_demo_questions_give_the_thermometer_one_alert_and_some_calm_topics(sess
     assert stats[0].topic == "Derivadas" and stats[0].confusion_alert is True
     assert {s.topic for s in stats} == {"Derivadas", "Límites", "Integrales"}
     assert sum(s.confusion_alert for s in stats) == 1
+
+
+def test_demo_lms_events_are_labelled_as_simulated(session):
+    seed(session)
+
+    sources = set(session.scalars(select(StudentEvent.source)).all())
+
+    assert sources == {"simulated"}

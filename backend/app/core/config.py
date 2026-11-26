@@ -27,6 +27,10 @@ class Settings(BaseSettings):
     llm_model: str = "gemini-2.5-flash"
     embedding_model: str = "gemini-embedding-001"
 
+    # Moodle Web Services. Empty = no Moodle: simulated demo data is used (services/moodle.py).
+    moodle_base_url: str = ""
+    moodle_token: str = ""
+
     # Signs access tokens (HS256). The default only exists for local development.
     jwt_secret: str = DEV_JWT_SECRET
     access_token_expires_seconds: int = 3600
@@ -41,6 +45,13 @@ class Settings(BaseSettings):
                 f"when ENVIRONMENT is '{self.environment}'."
             )
         return self
+
+    @field_validator("moodle_base_url")
+    @classmethod
+    def moodle_url_must_be_http(cls, value: str) -> str:
+        if value and not value.startswith(("http://", "https://")):
+            raise ValueError("MOODLE_BASE_URL must start with http:// or https://")
+        return value
 
     @field_validator("cors_origins", mode="before")
     @classmethod

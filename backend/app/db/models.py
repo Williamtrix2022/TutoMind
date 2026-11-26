@@ -91,6 +91,8 @@ class Document(Base):
     size_bytes: Mapped[int] = mapped_column(BigInteger)
     status: Mapped[str] = mapped_column(String(20), default="queued", server_default="queued")
     error_message: Mapped[str | None] = mapped_column(Text)
+    # Link to this resource in Moodle, when known; citations fall back to the course page.
+    moodle_url: Mapped[str | None] = mapped_column(String(500))
     created_at: Mapped[datetime] = _created_at()
 
     chunks: Mapped[list["DocumentChunk"]] = relationship(
@@ -195,6 +197,16 @@ class StudentEvent(Base):
         CheckConstraint(_in("type", EVENT_TYPES), name="ck_student_events_type"),
         CheckConstraint("scale IS NULL OR scale > 0", name="ck_student_events_scale"),
         Index("ix_student_events_course_user_time", "course_id", "user_id", "occurred_at"),
+        # The same fact from the same source is stored once: makes every sync re-runnable.
+        Index(
+            "uq_student_events_dedupe",
+            "course_id",
+            "user_id",
+            "type",
+            "occurred_at",
+            "source",
+            unique=True,
+        ),
     )
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)

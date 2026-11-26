@@ -15,6 +15,8 @@ from app.db.models import (
     SupportTicket,
     User,
 )
+from app.services.moodle import SimulatedMoodleClient
+from app.services.moodle_sync import sync_course
 
 DEMO_COURSE_ID = "demo"  # the frontend uses this id (frontend/src/lib/config.ts)
 DEMO_PASSWORD = "demo12345"  # development only
@@ -29,17 +31,6 @@ STUDENTS = [
 ]
 
 
-# Demo activity, as (days ago, kind, value, scale). Gives the dashboard one student per situation:
-# s1 green, s2 red (absent, failing, frustrated), s3 yellow, s4 red (no activity), s5 yellow.
-_EVENTS = {
-    "s1": [(0.3, "login", None, None), (1, "submission", None, None), (2, "submission", None, None),
-           (4, "submission", None, None), (6, "grade", 4.5, 5), (12, "grade", 4.2, 5)],
-    "s2": [(12, "login", None, None), (10, "grade", 2.0, 5), (20, "grade", 1.8, 5),
-           (3, "missed_deadline", None, None), (8, "missed_deadline", None, None),
-           (15, "missed_deadline", None, None)],
-    "s3": [(5, "login", None, None), (9, "grade", 3.2, 5), (4, "missed_deadline", None, None)],
-    "s5": [(6, "login", None, None), (14, "grade", 3.0, 5)],
-}  # fmt: skip
 # Student questions to the tutor: (days ago, frustration score, topic). Within 7 days they feed the
 # classroom thermometer (one alert: Derivadas); older ones only count towards the risk model.
 _QUESTIONS = {
@@ -59,7 +50,7 @@ def _demo_question(topic: str, score: float) -> str:
 
 
 def seed_activity(session: Session, now: datetime | None = None) -> None:
-    """Demo LMS events and tutor questions so the risk dashboard has something to show.
+    """Demo LMS events (simulated Moodle) and tutor questions, so the dashboards have data.
 
     Does nothing if the course already has activity (never overwrites real data).
     """
@@ -71,14 +62,8 @@ def seed_activity(session: Session, now: datetime | None = None) -> None:
     )
     if existing:
         return
-    for user_id, events in _EVENTS.items():
-        for days, kind, value, scale in events:
-            session.add(
-                StudentEvent(
-                    course_id=DEMO_COURSE_ID, user_id=user_id, type=kind, value=value,
-                    scale=scale, occurred_at=now - timedelta(days=days), source="seed",
-                )
-            )  # fmt: skip
+    # LMS events arrive through the real ingestion pipeline, from the simulated Moodle.
+    sync_course(session, SimulatedMoodleClient(), DEMO_COURSE_ID, now)
     for user_id, questions in _QUESTIONS.items():
         conversation = Conversation(
             id=f"seed-{user_id}", course_id=DEMO_COURSE_ID, student_id=user_id

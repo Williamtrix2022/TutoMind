@@ -16,14 +16,20 @@ class RetrievedChunk:
     title: str
     page: int | None
     content: str
+    moodle_url: str | None = None
 
 
 def retrieve_chunks(
-    session: Session, course_id: str, query_vector: list[float], k: int = DEFAULT_TOP_K
+    session: Session,
+    course_id: str,
+    query_vector: list[float],
+    k: int = DEFAULT_TOP_K,
+    course_url: str | None = None,
 ) -> list[RetrievedChunk]:
     """The `k` chunks of this course closest to the query (cosine distance), nearest first.
 
-    Only the given course is searched and only documents that finished indexing count.
+    Only the given course is searched and only documents that finished indexing count. Each chunk
+    carries its document's Moodle link, or `course_url` (the course page) when it has none.
     """
     rows = session.execute(
         select(DocumentChunk, Document)
@@ -38,6 +44,7 @@ def retrieve_chunks(
             title=document.title or document.filename,
             page=chunk.page,
             content=chunk.content,
+            moodle_url=document.moodle_url or course_url,
         )
         for chunk, document in rows
     ]

@@ -39,6 +39,7 @@ Variables de entorno o archivo `.env` (ver `.env.example`). Hoy:
 | `ACCESS_TOKEN_EXPIRES_SECONDS` | `3600` | Vigencia del token |
 | `DATABASE_URL` | `postgresql+psycopg://tutomind:tutomind@localhost:5432/tutomind` | Conexión a PostgreSQL |
 | `EMBEDDING_DIMENSIONS` | `1024` | Tamaño de los vectores |
+| `MOODLE_BASE_URL` / `MOODLE_TOKEN` | vacío | Moodle Web Services; sin ellos, datos simulados (ver Moodle) |
 | `GEMINI_API_KEY` | vacío | Clave gratuita de [Google AI Studio](https://aistudio.google.com/apikey). **Sin clave** el backend usa un cliente offline (embeddings léxicos y tutor de prueba) para poder desarrollar y probar |
 | `LLM_MODEL` | `gemini-2.5-flash` | Modelo del tutor |
 | `EMBEDDING_MODEL` | `gemini-embedding-001` | Modelo de embeddings (se pide a 1024 dimensiones y se normaliza) |
@@ -101,6 +102,20 @@ python -m app.db.seed              # 1 curso (id `demo`), 1 docente y 5 estudian
 - **Umbral de alerta:** `confusion_score ≥ 0.5` **y** al menos 3 preguntas (un estudiante molesto no es confusión grupal). Ambos valores son una primera calibración: ajustarlos con clases reales.
 - `sample_questions`: hasta 3 textos, primero los frustrados y los más recientes. Los temas no incluyen nombres de estudiantes.
 - Límite: se leen como máximo las 5000 preguntas más recientes de la ventana.
+
+## Moodle (#24)
+Alimenta el riesgo (#22) con actividad real y enlaza las citas del tutor a Moodle. **Sin Moodle configurado todo funciona con datos simulados**, avisando siempre.
+
+| Variable | Qué hace |
+|---|---|
+| `MOODLE_BASE_URL` | URL de Moodle (`https://moodle.universidad.edu`). Vacía = sin Moodle (datos simulados) |
+| `MOODLE_TOKEN` | Token de Web Services. Obligatorio si hay URL; la app se niega a inventar datos sin él |
+
+- **Ingesta:** `python -m app.services.moodle_sync <course_id>` (a mano o con cron). Es idempotente: un índice único (curso, estudiante, tipo, momento, origen) evita duplicados, así que se puede repetir sin miedo. Los usuarios se emparejan por **correo** (sin distinguir mayúsculas) con los estudiantes matriculados en el curso; el resto se cuenta como `usuarios_desconocidos`. El `course_id` de TutoMind es el id del curso en Moodle.
+- **Qué lee** (`app/services/moodle.py`, protocolo REST, un POST por función con el token en el cuerpo, nunca en la URL): `core_enrol_get_enrolled_users` (último acceso y quién es estudiante), `gradereport_user_get_grade_items` (notas), `mod_assign_get_assignments` y `mod_assign_get_submissions` (entregas; vencida sin entrega = plazo incumplido; un borrador no cuenta).
+- **Datos simulados:** sin configuración se usa `SimulatedMoodleClient`, solo para el curso `demo` (5 perfiles: verde, amarillo, rojo, y un estudiante nunca visto). Sus eventos llevan `source = 'simulated'` y cada ejecución **reemplaza** la instantánea anterior (están fechados respecto a "ahora"; si no, se acumularían y subirían el riesgo). Nunca toca datos reales de Moodle. `python -m app.db.seed` los usa.
+- **Enlaces:** cada cita del tutor lleva `moodle_url`: el enlace propio del documento (`documents.moodle_url`) o, si no lo tiene, la página del curso en Moodle (solo con `MOODLE_BASE_URL` y un id numérico).
+- **Límites, dichos con franqueza:** el cliente se escribió a partir de las respuestas documentadas de Moodle y se probó contra un Moodle **simulado**; **no se ha probado contra un Moodle real** (revisar los nombres de campo al primer uso). Moodle solo expone el *último* acceso, así que cada ingesta añade como mucho un acceso por estudiante. No hay planificador integrado (usar cron), ni forma todavía de rellenar `documents.moodle_url` desde la API.
 
 ## Errores
 Todo error se devuelve con el formato `ErrorResponse` del contrato: `{ "code", "message", "details"? }`.
