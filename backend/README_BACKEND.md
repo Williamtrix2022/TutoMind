@@ -70,6 +70,12 @@ python -m app.db.seed              # 1 curso (id `demo`), 1 docente y 5 estudian
 - Pipeline (`app/services/`): extracción de texto (`pypdf`, `python-docx`, `python-pptx`) → chunks de ~1000 caracteres con solape → embeddings → pgvector. Cualquier fallo deja el documento en `failed` con un motivo legible; los detalles internos solo van al log.
 - Los embeddings salen de `LLMClient.embed()` (`app/services/llm.py`): Gemini si hay `GEMINI_API_KEY`; si no, `OfflineLLMClient` (deterministas, **sin API key**, léxicos y no semánticos).
 
+## Frustración y escalamiento (#18)
+- `app/services/frustration.py`: puntuación 0–1 por mensaje, basada en reglas (transparente y sin costo). Solo cuentan las palabras del estudiante; el código y las fórmulas se ignoran. Se considera frustración desde `0.5`.
+- Escalamiento: `student_requested` (el estudiante pide ayuda) o `persistent_frustration` (frustrado ahora y en ≥ 2 de sus últimos 3 mensajes). `repeated_failure` está en el contrato pero aún no se detecta.
+- `app/services/tickets.py`: `open_ticket` crea el ticket para el docente en `support_tickets`, sin duplicar uno abierto de la misma conversación y motivo (índice único parcial, a prueba de peticiones simultáneas).
+- Se conecta al chat en #17. Listar los tickets desde la interfaz del docente requiere un endpoint nuevo en el contrato.
+
 ## Errores
 Todo error se devuelve con el formato `ErrorResponse` del contrato: `{ "code", "message", "details"? }`.
 Para fallar desde un endpoint: `raise ApiError(status, "codigo", "Mensaje")` (`app/core/errors.py`).
