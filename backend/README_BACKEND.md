@@ -1,6 +1,6 @@
 # TutoMind — Backend
 
-FastAPI (Python 3.12) + Pydantic v2 + PostgreSQL/pgvector + Anthropic SDK.
+FastAPI (Python 3.12) + Pydantic v2 + PostgreSQL/pgvector + Google Gemini (nivel gratuito).
 
 ## Contrato
 La fuente única de verdad es [`../docs/openapi.json`](../docs/openapi.json). Cualquier cambio de endpoint o esquema se hace ahí primero, en un PR revisado por ambos.
@@ -18,20 +18,71 @@ La fuente única de verdad es [`../docs/openapi.json`](../docs/openapi.json). Cu
 - Todo nivel de riesgo se devuelve con sus factores XAI estructurados.
 - CORS: permitir `http://localhost:3000` en desarrollo.
 
-## Arranque (a completar)
+## Arranque
 ```bash
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
-cp .env.example .env
+cd backend
+uv venv --python 3.12 .venv            # o: python -m venv .venv
+.venv\Scriptsctivate                 # Linux/macOS: source .venv/bin/activate
+pip install -r requirements-dev.txt
 uvicorn app.main:app --reload --port 8000
+```
+- `GET http://localhost:8000/health` → `{"status":"ok"}` (no forma parte del contrato).
+- Docs interactivas en `http://localhost:8000/docs`.
+
+## Configuración
+Variables de entorno o archivo `.env` (ver `.env.example`). Hoy:
+| Variable | Por defecto | Uso |
+|---|---|---|
+| `CORS_ORIGINS` | `http://localhost:3000` | Orígenes permitidos, separados por coma |
+| `ENVIRONMENT` | `development` | Nombre del entorno |
+| `JWT_SECRET` | secreto de desarrollo | Firma de tokens (obligatorio fuera de `development`) |
+| `ACCESS_TOKEN_EXPIRES_SECONDS` | `3600` | Vigencia del token |
+| `DATABASE_URL` | `postgresql+psycopg://tutomind:tutomind@localhost:5432/tutomind` | Conexión a PostgreSQL |
+| `EMBEDDING_DIMENSIONS` | `1024` | Tamaño de los vectores |
+| `GEMINI_API_KEY` | vacío | Clave gratuita de [Google AI Studio](https://aistudio.google.com/apikey) |
+| `LLM_MODEL` | `gemini-2.5-flash` | Modelo del tutor |
+| `EMBEDDING_MODEL` | `gemini-embedding-001` | Modelo de embeddings (se pide a 1024 dimensiones y se normaliza) |
+
+## Base de datos
+PostgreSQL 16 + pgvector. Credenciales de desarrollo en `docker-compose.yml`.
+```bash
+docker compose up -d db            # levanta Postgres con pgvector
+alembic upgrade head               # crea el esquema
+python -m app.db.seed              # 1 curso (id `demo`), 1 docente y 5 estudiantes
+```
+- Usuarios demo: `docente@tutomind.demo`, `ana@tutomind.demo`... con la contraseña `demo12345` (solo desarrollo).
+- Nueva migración: `alembic revision -m "descripcion"` (escríbela a mano; `0001_initial.py` es el ejemplo).
+- Dimensión de los embeddings: `EMBEDDING_DIMENSIONS` (1024). Cambiarla exige una migración nueva.
+- Los tests de `tests/db/` usan un Postgres embebido con pgvector (`pgserver`), **sin Docker**. Para usar otro servidor: `TEST_DATABASE_URL=postgresql://...` (se borra el esquema `public`).
+
+## Autenticación
+- `POST /api/v1/auth/login` devuelve un JWT (HS256) con `sub`, `role`, `iat` y `exp` (1 h por defecto).
+- `401` = sesión inválida o ausente (`code: unauthorized`, cabecera `WWW-Authenticate: Bearer`); `403` = rol sin permiso (`code: forbidden`).
+- Credenciales incorrectas: `401` con `code: invalid_credentials`, idéntico para correo inexistente y clave mala (no revela qué correos existen).
+- `role` en el login es solo demo: puede **confirmar** el rol de la cuenta, nunca otorgar otro.
+- En endpoints: `Depends(get_current_user)` o `Depends(require_role("teacher"))` (`app/api/deps.py`). El rol se lee de la base de datos, no del token.
+- `JWT_SECRET` es obligatorio (aleatorio, ≥ 32 caracteres) cuando `ENVIRONMENT` no es `development`; la app no arranca sin él.
+
+## Errores
+Todo error se devuelve con el formato `ErrorResponse` del contrato: `{ "code", "message", "details"? }`.
+Para fallar desde un endpoint: `raise ApiError(status, "codigo", "Mensaje")` (`app/core/errors.py`).
+
+## Pruebas y calidad
+```bash
+python -m pytest        # tests
+python -m ruff check .  # linter
 ```
 
 ## Estructura
 ```
 backend/
-├── app/            # Código de la aplicación
+├── app/            # Código de la aplicación (main, core/, api/, schemas/, db/)
+├── migrations/     # Alembic
+├── docker-compose.yml
+├── tests/          # pytest
 ├── .env.example
 ├── requirements.txt
+├── requirements-dev.txt
+├── pyproject.toml  # pytest y ruff
 └── README_BACKEND.md
 ```
