@@ -1,8 +1,10 @@
 from functools import lru_cache
 from typing import Annotated
 
-from pydantic import field_validator
+from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
+
+DEV_JWT_SECRET = "dev-only-insecure-secret-change-me-0123456789"
 
 
 class Settings(BaseSettings):
@@ -14,6 +16,26 @@ class Settings(BaseSettings):
     environment: str = "development"
     # NoDecode: accept "a,b" from the environment instead of requiring a JSON list.
     cors_origins: Annotated[list[str], NoDecode] = ["http://localhost:3000"]
+
+    # Matches docker-compose.yml. Development credentials only.
+    database_url: str = "postgresql+psycopg://tutomind:tutomind@localhost:5432/tutomind"
+    # Size of the embedding vectors stored in pgvector. Changing it needs a new migration.
+    embedding_dimensions: int = 1024
+
+    # Signs access tokens (HS256). The default only exists for local development.
+    jwt_secret: str = DEV_JWT_SECRET
+    access_token_expires_seconds: int = 3600
+
+    @model_validator(mode="after")
+    def require_a_real_secret_outside_development(self) -> "Settings":
+        if self.environment != "development" and (
+            self.jwt_secret == DEV_JWT_SECRET or len(self.jwt_secret) < 32
+        ):
+            raise ValueError(
+                "JWT_SECRET must be set to a random value of at least 32 characters "
+                f"when ENVIRONMENT is '{self.environment}'."
+            )
+        return self
 
     @field_validator("cors_origins", mode="before")
     @classmethod

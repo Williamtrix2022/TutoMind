@@ -1,0 +1,24 @@
+# PostgreSQL 16 + pgvector for local development.
+#   docker compose up -d db
+#   alembic upgrade head && python -m app.db.seed
+# Development credentials only; override with POSTGRES_* in your shell or a .env file.
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: tutomind-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-tutomind}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tutomind}
+      POSTGRES_DB: ${POSTGRES_DB:-tutomind}
+    ports:
+      - "5432:5432"
+    volumes:
+      - tutomind-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-tutomind} -d $${POSTGRES_DB:-tutomind}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  tutomind-pgdata:
