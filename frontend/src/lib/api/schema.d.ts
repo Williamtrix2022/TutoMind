@@ -28,7 +28,11 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /**
+         * Listar los documentos del curso y su estado de indexación
+         * @description Solo rol `teacher`. Más recientes primero. El frontend consulta este endpoint cada ~3 s mientras haya documentos en `queued` o `processing`.
+         */
+        get: operations["listCourseDocuments"];
         put?: never;
         /**
          * Subir documento del curso (PDF, DOCX, PPTX) para indexación RAG
@@ -147,6 +151,24 @@ export interface components {
             /** @enum {string} */
             mime_type: "application/pdf" | "application/vnd.openxmlformats-officedocument.wordprocessingml.document" | "application/vnd.openxmlformats-officedocument.presentationml.presentation";
             status: components["schemas"]["DocumentStatus"];
+        };
+        CourseDocument: {
+            document_id: string;
+            course_id: string;
+            filename: string;
+            title?: string | null;
+            /** @enum {string} */
+            mime_type: "application/pdf" | "application/vnd.openxmlformats-officedocument.wordprocessingml.document" | "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+            size_bytes: number;
+            status: components["schemas"]["DocumentStatus"];
+            /** @description Motivo del fallo; solo si `status` es `failed` */
+            error_message?: string | null;
+            /** Format: date-time */
+            created_at: string;
+        };
+        DocumentListResponse: {
+            course_id: string;
+            documents: components["schemas"]["CourseDocument"][];
         };
         /**
          * @description básico / intermedio / avanzado
@@ -321,6 +343,32 @@ export interface operations {
             422: components["responses"]["Error"];
         };
     };
+    listCourseDocuments: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description ID del curso (corresponde al curso en Moodle) */
+                course_id: components["parameters"]["CourseId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Documentos del curso */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentListResponse"];
+                };
+            };
+            401: components["responses"]["Error"];
+            403: components["responses"]["Error"];
+            404: components["responses"]["Error"];
+        };
+    };
     uploadCourseDocument: {
         parameters: {
             query?: never;
@@ -336,7 +384,7 @@ export interface operations {
                 "multipart/form-data": {
                     /**
                      * Format: binary
-                     * @description Archivo PDF, DOCX o PPTX
+                     * @description Archivo PDF, DOCX o PPTX. Máximo 20 MB (413 si lo supera; 415 si el tipo no está permitido).
                      */
                     file: string;
                     title?: string;

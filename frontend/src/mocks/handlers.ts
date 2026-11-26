@@ -1,12 +1,14 @@
 import { delay, http, HttpResponse } from "msw";
 import type { components } from "@/lib/api/schema";
+import { MAX_SIZE_BYTES, MAX_SIZE_LABEL, matchType } from "@/lib/documents";
+import { addDocument, listDocuments } from "./documents-store";
 import { MOCK_HELP_REPLY, MOCK_STUDENTS, MOCK_TOPICS, MOCK_TUTOR_REPLY } from "./fixtures";
 
 type LoginRequest = components["schemas"]["LoginRequest"];
 type LoginResponse = components["schemas"]["LoginResponse"];
 type TutorChatRequest = components["schemas"]["TutorChatRequest"];
 type TutorStreamEvent = components["schemas"]["TutorStreamEvent"];
-type DocumentUploadResponse = components["schemas"]["DocumentUploadResponse"];
+type DocumentListResponse = components["schemas"]["DocumentListResponse"];
 type CourseRiskResponse = components["schemas"]["CourseRiskResponse"];
 type RiskLevel = components["schemas"]["RiskLevel"];
 
@@ -94,15 +96,42 @@ export const handlers = [
     return HttpResponse.json(response);
   }),
 
-  http.post("*/api/v1/courses/:courseId/documents", async ({ params }) => {
-    await delay(600);
-    const response: DocumentUploadResponse = {
-      document_id: `doc-${Date.now()}`,
+  http.get("*/api/v1/courses/:courseId/documents", async ({ params }) => {
+    await delay(250);
+    const response: DocumentListResponse = {
       course_id: String(params.courseId),
-      filename: "documento.pdf",
-      mime_type: "application/pdf",
-      status: "queued",
+      documents: listDocuments(),
     };
+    return HttpResponse.json(response);
+  }),
+
+  http.post("*/api/v1/courses/:courseId/documents", async ({ params, request }) => {
+    const form = await request.formData();
+    const file = form.get("file");
+    if (!(file instanceof File)) {
+      return HttpResponse.json({ code: "invalid_request", message: "Falta el archivo." }, { status: 422 });
+    }
+    const type = matchType(file);
+    if (!type) {
+      return HttpResponse.json(
+        { code: "unsupported_media_type", message: "Solo se admiten archivos PDF, DOCX y PPTX." },
+        { status: 415 },
+      );
+    }
+    if (file.size > MAX_SIZE_BYTES) {
+      return HttpResponse.json(
+        { code: "file_too_large", message: `El archivo supera el máximo de ${MAX_SIZE_LABEL}.` },
+        { status: 413 },
+      );
+    }
+    const title = form.get("title");
+    await delay(900);
+    const response = addDocument({
+      courseId: String(params.courseId),
+      file,
+      mime: type.mime,
+      title: typeof title === "string" && title ? title : null,
+    });
     return HttpResponse.json(response, { status: 202 });
   }),
 
