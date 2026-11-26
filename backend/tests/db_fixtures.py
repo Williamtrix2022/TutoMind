@@ -17,7 +17,7 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
 
-BACKEND_DIR = Path(__file__).resolve().parents[2]
+BACKEND_DIR = Path(__file__).resolve().parents[1]
 
 
 def to_sqlalchemy_url(url: str) -> str:

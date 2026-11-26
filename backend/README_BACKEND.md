@@ -35,6 +35,8 @@ Variables de entorno o archivo `.env` (ver `.env.example`). Hoy:
 |---|---|---|
 | `CORS_ORIGINS` | `http://localhost:3000` | Orígenes permitidos, separados por coma |
 | `ENVIRONMENT` | `development` | Nombre del entorno |
+| `JWT_SECRET` | secreto de desarrollo | Firma de tokens (obligatorio fuera de `development`) |
+| `ACCESS_TOKEN_EXPIRES_SECONDS` | `3600` | Vigencia del token |
 | `DATABASE_URL` | `postgresql+psycopg://tutomind:tutomind@localhost:5432/tutomind` | Conexión a PostgreSQL |
 | `EMBEDDING_DIMENSIONS` | `1024` | Tamaño de los vectores |
 
@@ -49,6 +51,14 @@ python -m app.db.seed              # 1 curso (id `demo`), 1 docente y 5 estudian
 - Nueva migración: `alembic revision -m "descripcion"` (escríbela a mano; `0001_initial.py` es el ejemplo).
 - Dimensión de los embeddings: `EMBEDDING_DIMENSIONS` (1024). Cambiarla exige una migración nueva.
 - Los tests de `tests/db/` usan un Postgres embebido con pgvector (`pgserver`), **sin Docker**. Para usar otro servidor: `TEST_DATABASE_URL=postgresql://...` (se borra el esquema `public`).
+
+## Autenticación
+- `POST /api/v1/auth/login` devuelve un JWT (HS256) con `sub`, `role`, `iat` y `exp` (1 h por defecto).
+- `401` = sesión inválida o ausente (`code: unauthorized`, cabecera `WWW-Authenticate: Bearer`); `403` = rol sin permiso (`code: forbidden`).
+- Credenciales incorrectas: `401` con `code: invalid_credentials`, idéntico para correo inexistente y clave mala (no revela qué correos existen).
+- `role` en el login es solo demo: puede **confirmar** el rol de la cuenta, nunca otorgar otro.
+- En endpoints: `Depends(get_current_user)` o `Depends(require_role("teacher"))` (`app/api/deps.py`). El rol se lee de la base de datos, no del token.
+- `JWT_SECRET` es obligatorio (aleatorio, ≥ 32 caracteres) cuando `ENVIRONMENT` no es `development`; la app no arranca sin él.
 
 ## Errores
 Todo error se devuelve con el formato `ErrorResponse` del contrato: `{ "code", "message", "details"? }`.

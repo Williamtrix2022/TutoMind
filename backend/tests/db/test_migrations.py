@@ -5,7 +5,7 @@ from sqlalchemy import inspect, text
 
 from app.core.config import Settings
 from app.db.base import Base
-from tests.db.conftest import alembic_config
+from tests.db_fixtures import alembic_config
 
 EXPECTED_TABLES = {
     "users",
