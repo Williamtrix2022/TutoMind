@@ -16,6 +16,7 @@ EXPECTED_TABLES = {
     "conversations",
     "messages",
     "support_tickets",
+    "student_events",
 }
 
 

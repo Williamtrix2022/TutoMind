@@ -100,9 +100,15 @@ def prepare_turn(
 ) -> Turn:
     question = body.messages[-1].content
     conversation = _conversation_for(session, user, body)
-    session.add(Message(conversation_id=conversation.id, role="user", content=question))
-
     assessment = assess(body.messages, body.request_human_help)
+    session.add(
+        Message(
+            conversation_id=conversation.id,
+            role="user",
+            content=question,
+            frustration_score=assessment.frustration.score,
+        )
+    )
     chunks = (
         retrieve_chunks(session, body.course_id, query_vector) if query_vector is not None else []
     )

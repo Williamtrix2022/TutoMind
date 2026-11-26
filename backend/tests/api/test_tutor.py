@@ -107,6 +107,15 @@ class TestStreaming:
             ("assistant", "Hola mundo"),
         ]
 
+    def test_the_frustration_score_of_the_student_message_is_stored(
+        self, api, session, student, auth, spy
+    ):
+        chat(api, student, auth, text="no entiendo")
+
+        stored = session.scalars(select(Message).order_by(Message.id)).all()
+        assert stored[0].role == "user" and stored[0].frustration_score >= 0.5
+        assert stored[1].role == "assistant" and stored[1].frustration_score is None
+
     def test_an_existing_conversation_is_continued(self, api, session, student, auth, spy):
         first = parse_sse(chat(api, student, auth).text)[-1]["conversation_id"]
 
