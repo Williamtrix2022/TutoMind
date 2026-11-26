@@ -7,7 +7,7 @@ TutoMind es una plataforma web educativa (PWA) integrada con Moodle que ofrece:
 
 ## Arquitectura del Monorepo
 - `/frontend`: Next.js 15 (App Router), TypeScript estricto, Tailwind CSS, shadcn/ui, Motion (Framer), KaTeX, Shiki.
-- `/backend`: FastAPI (Python 3.12), Pydantic v2, PostgreSQL + pgvector, Anthropic SDK.
+- `/backend`: FastAPI (Python 3.12), Pydantic v2, PostgreSQL + pgvector, Google Gemini (nivel gratuito, SDK `google-genai`) para el tutor y los embeddings.
 - `/docs/openapi.json`: Fuente única de verdad para los tipos entre Frontend y Backend.
 
 ## Estándares de Diseño UI/UX (Apple HIG + Silent Moon Aesthetic)

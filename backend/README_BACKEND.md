@@ -1,6 +1,6 @@
 # TutoMind — Backend
 
-FastAPI (Python 3.12) + Pydantic v2 + PostgreSQL/pgvector + Anthropic SDK.
+FastAPI (Python 3.12) + Pydantic v2 + PostgreSQL/pgvector + Google Gemini (nivel gratuito).
 
 ## Contrato
 La fuente única de verdad es [`../docs/openapi.json`](../docs/openapi.json). Cualquier cambio de endpoint o esquema se hace ahí primero, en un PR revisado por ambos.
@@ -39,6 +39,9 @@ Variables de entorno o archivo `.env` (ver `.env.example`). Hoy:
 | `ACCESS_TOKEN_EXPIRES_SECONDS` | `3600` | Vigencia del token |
 | `DATABASE_URL` | `postgresql+psycopg://tutomind:tutomind@localhost:5432/tutomind` | Conexión a PostgreSQL |
 | `EMBEDDING_DIMENSIONS` | `1024` | Tamaño de los vectores |
+| `GEMINI_API_KEY` | vacío | Clave gratuita de [Google AI Studio](https://aistudio.google.com/apikey) |
+| `LLM_MODEL` | `gemini-2.5-flash` | Modelo del tutor |
+| `EMBEDDING_MODEL` | `gemini-embedding-001` | Modelo de embeddings (se pide a 1024 dimensiones y se normaliza) |
 
 ## Base de datos
 PostgreSQL 16 + pgvector. Credenciales de desarrollo en `docker-compose.yml`.
