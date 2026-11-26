@@ -40,12 +40,22 @@ _EVENTS = {
     "s3": [(5, "login", None, None), (9, "grade", 3.2, 5), (4, "missed_deadline", None, None)],
     "s5": [(6, "login", None, None), (14, "grade", 3.0, 5)],
 }  # fmt: skip
-# Student questions to the tutor: (days ago, frustration score).
+# Student questions to the tutor: (days ago, frustration score, topic). Within 7 days they feed the
+# classroom thermometer (one alert: Derivadas); older ones only count towards the risk model.
 _QUESTIONS = {
-    "s1": [(1, 0.0), (2, 0.0), (3, 0.0), (5, 0.0), (7, 0.0), (9, 0.0)],
-    "s2": [(11, 0.7), (11.1, 0.8), (12, 0.1)],
-    "s3": [(5, 0.0)],
-}
+    "s1": [(1, 0.0, "Derivadas"), (2, 0.0, "Derivadas"), (3, 0.0, "Límites"),
+           (5, 0.0, "Integrales"), (8, 0.0, "Derivadas"), (9, 0.0, "Límites")],
+    "s2": [(1, 0.8, "Derivadas"), (1.1, 0.7, "Derivadas"), (11, 0.7, "Derivadas"),
+           (11.1, 0.8, "Derivadas"), (12, 0.1, "Derivadas")],
+    "s3": [(3, 0.6, "Derivadas"), (5, 0.0, "Límites")],
+    "s5": [(2, 0.5, "Integrales"), (4, 0.0, "Integrales")],
+}  # fmt: skip
+
+
+def _demo_question(topic: str, score: float) -> str:
+    if score >= 0.5:
+        return f"No entiendo {topic.lower()}, ¿me ayudas?"
+    return f"¿Puedes explicarme {topic.lower()}?"
 
 
 def seed_activity(session: Session, now: datetime | None = None) -> None:
@@ -75,10 +85,11 @@ def seed_activity(session: Session, now: datetime | None = None) -> None:
         )
         session.add(conversation)
         session.flush()
-        for days, score in questions:
+        for days, score, topic in questions:
             session.add(
                 Message(
-                    conversation_id=conversation.id, role="user", content="Consulta de demo",
+                    conversation_id=conversation.id, role="user",
+                    content=_demo_question(topic, score), topic=topic,
                     frustration_score=score, created_at=now - timedelta(days=days),
                 )
             )  # fmt: skip

@@ -33,6 +33,7 @@ from app.services.frustration import Assessment, assess
 from app.services.llm import LLMClient
 from app.services.retrieval import RetrievedChunk, retrieve_chunks
 from app.services.tickets import open_ticket
+from app.services.topics import topic_for
 from app.services.tutor_prompt import (
     asks_for_full_solution,
     build_prompt,
@@ -101,16 +102,18 @@ def prepare_turn(
     question = body.messages[-1].content
     conversation = _conversation_for(session, user, body)
     assessment = assess(body.messages, body.request_human_help)
+    chunks = (
+        retrieve_chunks(session, body.course_id, query_vector) if query_vector is not None else []
+    )
     session.add(
         Message(
             conversation_id=conversation.id,
             role="user",
             content=question,
             frustration_score=assessment.frustration.score,
+            # Asking for a human is not a subject of study; so is a question we could not search.
+            topic=topic_for(question, chunks) if query_vector is not None else None,
         )
-    )
-    chunks = (
-        retrieve_chunks(session, body.course_id, query_vector) if query_vector is not None else []
     )
 
     ticket_id = None

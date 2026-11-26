@@ -11,7 +11,7 @@ _STOPWORDS = frozenset(
 )
 
 
-def _tokens(text: str) -> list[str]:
+def tokenize(text: str) -> list[str]:
     plain = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode().lower()
     words = re.findall(r"[a-z0-9]+", plain)
     return [w for w in words if w not in _STOPWORDS] or words
@@ -29,7 +29,7 @@ class HashingEmbedder:
 
     def _embed_one(self, text: str) -> list[float]:
         vector = [0.0] * self.dimensions
-        for token in _tokens(text):
+        for token in tokenize(text):
             digest = int.from_bytes(hashlib.blake2b(token.encode(), digest_size=8).digest(), "big")
             vector[digest % self.dimensions] += 1.0 if (digest >> 63) & 1 else -1.0
         norm = math.sqrt(sum(x * x for x in vector))

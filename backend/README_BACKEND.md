@@ -94,6 +94,14 @@ python -m app.db.seed              # 1 curso (id `demo`), 1 docente y 5 estudian
 - Los datos salen de `student_events` (accesos, notas, entregas, plazos vencidos; los alimenta Moodle en #24), de las preguntas al tutor (con su `frustration_score`, que ahora se guarda) y de los tickets abiertos. Ventanas: notas 90 días, entregas 30, tutor 14.
 - `python -m app.db.seed` incluye actividad de demostración: un estudiante verde, dos amarillos y dos rojos (uno de ellos nunca visto).
 
+## Temas y termómetro del aula (#23)
+- `GET /api/v1/analytics/courses/{course_id}/topics` (solo docente matriculado): temas de los **últimos 7 días**, con las alertas primero.
+- **Tema de una pregunta** (`app/services/topics.py`): el título del documento del curso cuyo fragmento más cercano comparte vocabulario con la pregunta (se ignoran plurales, tildes y mayúsculas); si ninguno lo hace, `Otros temas`. Se guarda en `messages.topic` al chatear. Pedir ayuda al docente no es un tema. Es un criterio grueso a propósito (1 documento = 1 tema), gratis y sin modelo; `topic_for` es el único punto a sustituir por uno más fino.
+- **Confusión de un tema** (0–1): `0.6 × (preguntas con frustración / preguntas) + 0.4 × (estudiantes que preguntaron más de una vez / estudiantes)`.
+- **Umbral de alerta:** `confusion_score ≥ 0.5` **y** al menos 3 preguntas (un estudiante molesto no es confusión grupal). Ambos valores son una primera calibración: ajustarlos con clases reales.
+- `sample_questions`: hasta 3 textos, primero los frustrados y los más recientes. Los temas no incluyen nombres de estudiantes.
+- Límite: se leen como máximo las 5000 preguntas más recientes de la ventana.
+
 ## Errores
 Todo error se devuelve con el formato `ErrorResponse` del contrato: `{ "code", "message", "details"? }`.
 Para fallar desde un endpoint: `raise ApiError(status, "codigo", "Mensaje")` (`app/core/errors.py`).

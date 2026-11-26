@@ -89,3 +89,15 @@ def test_activity_seed_does_not_touch_a_course_that_already_has_data(session):
     seed(session)
 
     assert session.scalar(select(func.count()).select_from(StudentEvent)) == 1
+
+
+def test_demo_questions_give_the_thermometer_one_alert_and_some_calm_topics(session):
+    from app.services.topics import compute_topics, load_topic_questions
+
+    seed(session)
+
+    stats = compute_topics(load_topic_questions(session, DEMO_COURSE_ID, datetime.now(UTC)))
+
+    assert stats[0].topic == "Derivadas" and stats[0].confusion_alert is True
+    assert {s.topic for s in stats} == {"Derivadas", "Límites", "Integrales"}
+    assert sum(s.confusion_alert for s in stats) == 1

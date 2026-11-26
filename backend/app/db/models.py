@@ -151,6 +151,8 @@ class Message(Base):
     content: Mapped[str] = mapped_column(Text)
     # Frustration of a student message (0-1); NULL for tutor replies and older messages.
     frustration_score: Mapped[float | None] = mapped_column(Float)
+    # Topic of a student question (see services/topics.py); NULL for replies and unclassified.
+    topic: Mapped[str | None] = mapped_column(String(120))
     created_at: Mapped[datetime] = _created_at()
 
 
