@@ -64,7 +64,7 @@ def test_operation_matches_the_contract(path, method):
 
     expected_responses = response_schemas(expected, CONTRACT)
     actual_responses = response_schemas(actual, GENERATED)
-    # Only the known gaps may be extra (404 unknown course, 422 validation). Nothing else may differ.
+    # Only the known gaps may be extra (404 unknown course, 422 validation); nothing else.
     for status in UNDOCUMENTED_OK:
         if status not in expected_responses:
             actual_responses.pop(status, None)
