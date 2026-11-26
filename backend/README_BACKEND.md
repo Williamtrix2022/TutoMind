@@ -76,6 +76,15 @@ python -m app.db.seed              # 1 curso (id `demo`), 1 docente y 5 estudian
 - `app/services/tickets.py`: `open_ticket` crea el ticket para el docente en `support_tickets`, sin duplicar uno abierto de la misma conversación y motivo (índice único parcial, a prueba de peticiones simultáneas).
 - Se conecta al chat en #17. Listar los tickets desde la interfaz del docente requiere un endpoint nuevo en el contrato.
 
+## Tutor socrático (#17)
+- `POST /api/v1/tutor/chat/stream` (SSE, cualquier usuario matriculado en el curso). Cada evento es `data: {json}` + línea en blanco, con el formato `TutorStreamEvent` del contrato. Orden: `frustration` (si se detecta) → `token`… → `sources` → `escalation` (si aplica) → `done`. Si el modelo falla: un evento `error` (sin detalles internos) y no hay `done`.
+- Cada turno guarda la pregunta y la respuesta en `conversations`/`messages`. `conversation_id` ajeno o inexistente → `404`.
+- Recuperación (`retrieval.py`): los 4 fragmentos más cercanos **del mismo curso** (distancia coseno) de documentos ya indexados. Si no hay material, el tutor lo dice y no inventa fuentes. Si falla el embedding de la pregunta, responde sin material.
+- Prompt (`tutor_prompt.py`): método socrático, **no entrega la solución completa**, negativa a hacer tareas/exámenes (con guardia extra cuando lo detecta), profundidad según `student_level`, tono empático si hay frustración, y el material va delimitado y escapado como *datos*, no instrucciones (defensa contra prompt injection).
+- Escalamiento: si el estudiante pide ayuda (`request_human_help`) se responde con un acuse fijo, **sin llamar al modelo**, y se abre el ticket; con frustración persistente se abre el ticket y se avisa. `ticket_id` va en el evento `escalation`.
+- Límites: 40 mensajes por petición y 8000 caracteres por mensaje (`422`).
+- Sin `GEMINI_API_KEY` responde `OfflineLLMClient` (reglas, no razona); con clave, Gemini.
+
 ## Errores
 Todo error se devuelve con el formato `ErrorResponse` del contrato: `{ "code", "message", "details"? }`.
 Para fallar desde un endpoint: `raise ApiError(status, "codigo", "Mensaje")` (`app/core/errors.py`).
