@@ -97,13 +97,19 @@ def _conversation_for(session: Session, user: User, body: TutorChatRequest) -> C
 
 
 def prepare_turn(
-    session: Session, user: User, body: TutorChatRequest, query_vector: list[float] | None
+    session: Session,
+    user: User,
+    body: TutorChatRequest,
+    query_vector: list[float] | None,
+    course_url: str | None = None,
 ) -> Turn:
     question = body.messages[-1].content
     conversation = _conversation_for(session, user, body)
     assessment = assess(body.messages, body.request_human_help)
     chunks = (
-        retrieve_chunks(session, body.course_id, query_vector) if query_vector is not None else []
+        retrieve_chunks(session, body.course_id, query_vector, course_url=course_url)
+        if query_vector is not None
+        else []
     )
     session.add(
         Message(
@@ -151,6 +157,18 @@ def _frame(event: BaseModel) -> str:
     return f"data: {json.dumps(event.model_dump(mode='json', exclude_none=True))}\n\n"
 
 
+def _citation(chunk: RetrievedChunk) -> SourceCitation:
+    try:
+        return SourceCitation(
+            document_id=chunk.document_id,
+            title=chunk.title,
+            page=chunk.page,
+            moodle_url=chunk.moodle_url,
+        )
+    except ValueError:  # a malformed stored link must not break the answer: cite without it
+        return SourceCitation(document_id=chunk.document_id, title=chunk.title, page=chunk.page)
+
+
 def _words(text: str) -> list[str]:
     return [piece for piece in re.split(r"(\s+)", text) if piece]
 
@@ -189,10 +207,7 @@ async def stream_events(
     if turn.chunks:
         cited: dict[str, SourceCitation] = {}
         for chunk in turn.chunks:
-            cited.setdefault(
-                chunk.document_id,
-                SourceCitation(document_id=chunk.document_id, title=chunk.title, page=chunk.page),
-            )
+            cited.setdefault(chunk.document_id, _citation(chunk))
         yield _frame(SourcesEvent(type="sources", sources=list(cited.values())))
 
     reason: Literal["student_requested", "persistent_frustration"] | None

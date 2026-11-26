@@ -6,11 +6,13 @@ from sqlalchemy.orm import Session
 from starlette.concurrency import run_in_threadpool
 
 from app.api.deps import get_current_user
+from app.core.config import Settings, get_settings
 from app.core.errors import ApiError
 from app.db.models import Course, Enrollment, User
 from app.db.session import SessionFactory, get_session, get_session_factory
 from app.schemas import TutorChatRequest, TutorStreamEvent
 from app.services.llm import LLMClient, get_llm_client
+from app.services.moodle import moodle_course_url
 from app.services.tutor import prepare_turn, stream_events, validate_request
 
 logger = logging.getLogger(__name__)
@@ -53,6 +55,7 @@ async def stream_tutor_chat(
     session: Session = Depends(get_session),
     llm: LLMClient = Depends(get_llm_client),
     session_factory: SessionFactory = Depends(get_session_factory),
+    settings: Settings = Depends(get_settings),
 ) -> EventStreamResponse:
     question = validate_request(body)
     await run_in_threadpool(_check_course_access, session, user, body.course_id)
@@ -65,7 +68,8 @@ async def stream_tutor_chat(
             # No material is better than no tutor: answer without it.
             logger.exception("Embedding the question failed; answering without course material")
 
-    turn = await run_in_threadpool(prepare_turn, session, user, body, query_vector)
+    course_url = moodle_course_url(settings, body.course_id)
+    turn = await run_in_threadpool(prepare_turn, session, user, body, query_vector, course_url)
     return EventStreamResponse(
         stream_events(turn, llm, session_factory),
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},

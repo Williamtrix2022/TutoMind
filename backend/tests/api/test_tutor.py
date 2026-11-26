@@ -2,7 +2,15 @@ import pytest
 from pydantic import TypeAdapter
 from sqlalchemy import select
 
-from app.db.models import Conversation, Course, Document, DocumentChunk, Message, SupportTicket
+from app.db.models import (
+    Conversation,
+    Course,
+    Document,
+    DocumentChunk,
+    Enrollment,
+    Message,
+    SupportTicket,
+)
 from app.schemas import TutorStreamEvent
 from app.services.embeddings import HashingEmbedder
 from app.services.llm import get_llm_client
@@ -184,6 +192,60 @@ class TestRetrieval:
 
         assert "sources" not in types(events)
         assert "No hay material del curso relevante" in spy.calls[0][1]
+
+
+class TestMoodleLinks:
+    BASE = "https://moodle.example.edu"
+
+    @pytest.fixture
+    def moodle_course(self, session, student):
+        session.add(Course(id="101", name="Cálculo (Moodle)"))
+        session.flush()
+        session.add(Enrollment(course_id="101", user_id=student.id))
+        session.flush()
+
+    def cited(self, api, student, auth):
+        events = parse_sse(chat(api, student, auth, text="derivada y cambio", course_id="101").text)
+        return next(e for e in events if e["type"] == "sources")["sources"][0]
+
+    def test_citations_link_to_the_course_in_moodle_when_configured(
+        self, api, session, student, auth, spy, settings, moodle_course
+    ):
+        settings.moodle_base_url = self.BASE
+        add_material(session, "101", "d1", "Guía", "la derivada mide el cambio")
+
+        source = self.cited(api, student, auth)
+
+        assert source["moodle_url"] == f"{self.BASE}/course/view.php?id=101"
+
+    def test_a_documents_own_moodle_link_wins(
+        self, api, session, student, auth, spy, settings, moodle_course
+    ):
+        settings.moodle_base_url = self.BASE
+        add_material(session, "101", "d1", "Guía", "la derivada mide el cambio")
+        session.get(Document, "d1").moodle_url = f"{self.BASE}/mod/resource/view.php?id=7"
+        session.flush()
+
+        assert self.cited(api, student, auth)["moodle_url"].endswith("/mod/resource/view.php?id=7")
+
+    def test_without_moodle_there_is_no_link(
+        self, api, session, student, auth, spy, settings, moodle_course
+    ):
+        add_material(session, "101", "d1", "Guía", "la derivada mide el cambio")
+
+        assert "moodle_url" not in self.cited(api, student, auth)
+
+    def test_a_malformed_stored_link_does_not_break_the_answer(
+        self, api, session, student, auth, spy, settings, moodle_course
+    ):
+        add_material(session, "101", "d1", "Guía", "la derivada mide el cambio")
+        session.get(Document, "d1").moodle_url = "not a url"
+        session.flush()
+
+        events = parse_sse(chat(api, student, auth, text="derivada y cambio", course_id="101").text)
+
+        assert types(events)[-1] == "done"
+        assert "moodle_url" not in next(e for e in events if e["type"] == "sources")["sources"][0]
 
 
 class TestPedagogy:
