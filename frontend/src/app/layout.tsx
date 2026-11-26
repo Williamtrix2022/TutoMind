@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   applicationName: "TutoMind",
   icons: {
-    icon: "/icons/icon-192.png",
+    icon: [{ url: "/icon.svg", type: "image/svg+xml" }, { url: "/icons/icon-192.png" }],
     apple: "/icons/apple-touch-icon.png",
   },
   appleWebApp: { capable: true, title: "TutoMind", statusBarStyle: "black-translucent" },

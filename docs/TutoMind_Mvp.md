@@ -182,6 +182,8 @@ Pendiente. Ver [`backend/README_BACKEND.md`](../backend/README_BACKEND.md) y `ba
 | Fecha | Decisión | Motivo |
 |---|---|---|
 | 2026-11-24 | Rojo del semáforo: `#E5484D` | `#FA6E5A` ya era «riesgo medio»; este se distingue y mantiene la calma de la paleta. |
+| 2026-11-26 | Riesgo medio en amarillo `#F4B63F` (antes `#FA6E5A`) | El semáforo debe leerse verde, amarillo y rojo. `#FFCF86` sigue reservado para alertas de confusión; el texto usa tintas más oscuras en modo día para mantener el contraste. |
+| 2026-11-26 | Logo «T neuronal» (`LogoMark`) en lugar del ícono de luna | Marca propia: arco (aula), tronco (tutor) y nodos (ideas conectadas), con la chispa de la IA en el centro. |
 | 2026-11-24 | Mocks con MSW 2.x (no 3.x) | La 3.x es reciente y su export de navegador falla con webpack. |
 | 2026-11-24 | Frontend trabaja con mocks hasta el Sprint 2 | Desbloquea al frontend mientras el backend arranca. |
 | 2026-11-25 | Rutas en grupos `(app)` con shell y `(auth)` sin shell | El login no debe mostrar la barra lateral. |

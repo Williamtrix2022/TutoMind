@@ -104,4 +104,4 @@ Lee [`CONTRIBUTING.md`](CONTRIBUTING.md). Resumen:
 
 ## 🎨 Diseño
 
-Estética Apple HIG + Silent Moon: tarjetas Bento `rounded-3xl`, modo noche (`#03174C`) y día (`#F6F7FB`), acentos `#8E97FD`, `#6CB28E`, `#FA6E5A`, `#FFCF86`, `#D9A5B3`. Detalles en [`CLAUDE.md`](CLAUDE.md).
+Estética Apple HIG + Silent Moon: tarjetas Bento `rounded-3xl`, modo noche (`#03174C`) y día (`#F6F7FB`), acentos `#8E97FD`, `#6CB28E`, `#F4B63F`, `#FA6E5A`, `#FFCF86`, `#D9A5B3`. Detalles en [`CLAUDE.md`](CLAUDE.md).

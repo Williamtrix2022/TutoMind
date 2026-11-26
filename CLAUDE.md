@@ -17,7 +17,8 @@ TutoMind es una plataforma web educativa (PWA) integrada con Moodle que ofrece:
   - Light Canvas: `#F6F7FB` | Light Card: `#FFFFFF`
   - Primary Accent (Focus/CTA): `#8E97FD`
   - Success / Riesgo Bajo: `#6CB28E`
-  - Warning / Riesgo Medio: `#FA6E5A`
+  - Caution / Riesgo Medio (amarillo del semáforo): `#F4B63F`
+  - Warning / Avisos no críticos: `#FA6E5A`
   - Danger / Riesgo Alto (rojo del semáforo): `#E5484D`
   - Highlight / Alerta Confusión: `#FFCF86`
   - AI Glow / Secundario: `#D9A5B3`
