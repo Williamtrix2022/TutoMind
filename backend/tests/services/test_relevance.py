@@ -83,3 +83,37 @@ class TestLexical:
 
     def test_the_lexical_filter_needs_the_question(self):
         assert select_relevant([CALCULUS], None, OFFLINE) == [CALCULUS]
+
+
+class TestFeelingsAndSecondaryDocuments:
+    BOOK = chunk(
+        "libro",
+        "Sin duda un libro sencillo de entender, imposible dejar de agradecer a los autores.",
+        0.9,
+    )
+
+    def test_a_message_about_how_the_student_feels_gets_no_material(self):
+        for message in ("sigo sin entender, esto es imposible, me rindo", "no entiendo nada"):
+            assert select_relevant([self.BOOK, CALCULUS], message, OFFLINE) == []
+
+    def test_another_document_matching_one_word_does_not_tag_along(self):
+        both = chunk("derivadas", "La regla de la cadena deriva funciones compuestas.", 0.90)
+        one_word = chunk("integrales", "Aplicar la regla de la potencia a 1/x da ln|x|.", 0.91)
+
+        kept = select_relevant([both, one_word], "¿cuándo uso la regla de la cadena?", OFFLINE)
+
+        assert kept == [both]
+
+    def test_the_leading_document_still_brings_its_neighbouring_chunk(self):
+        # The title «Regla de la cadena» is split across two chunks of the same document.
+        explanation = chunk(
+            "derivadas", "de la cadena Se usa cuando una función está dentro de otra.", 0.91
+        )
+        errors = chunk(
+            "derivadas", "Olvidar la derivada interior en la regla de la cadena es común.", 0.90
+        )
+
+        kept = select_relevant([errors, explanation], "regla de la cadena", OFFLINE)
+
+        assert set(kept) == {errors, explanation}
+        assert kept[0] is errors  # the chunk with both words comes first

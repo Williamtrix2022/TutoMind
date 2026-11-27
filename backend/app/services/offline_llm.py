@@ -53,6 +53,10 @@ _NOT_FOUND = (
     "inventarte una explicación. Prueba a reformular la pregunta con el nombre del tema "
     "(por ejemplo, «regla de la cadena»)."
 )
+_ASK_WHAT_PART = (
+    "Cuéntame qué parte exacta se te complica (un paso, un concepto o un ejercicio) y la "
+    "revisamos con calma, explicada de otra forma."
+)
 _CLOSING = "¿Te queda claro{example} o quieres que revisemos otra parte?"
 
 
@@ -212,7 +216,8 @@ class OfflineLLMClient:
         )
         groups = _by_document(_sources(system))[:MAX_SOURCES_SHOWN]
         if not groups:
-            return f"{opener} {_NOT_FOUND}"
+            # A frustrated message is about how the student feels, not a subject to look up.
+            return f"{opener} {_ASK_WHAT_PART if EMPATHY_MARKER in system else _NOT_FOUND}"
 
         parts = [opener]
         if SOLUTION_GUARD_MARKER in system:
