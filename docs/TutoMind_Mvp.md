@@ -37,9 +37,9 @@ TutoMind es una plataforma web educativa (PWA) integrada con **Moodle** que ofre
 
 ## 2. Estado actual
 
-**Progreso global: 27 de 29 tareas (93 %)**
+**Progreso global: 28 de 29 tareas (97 %)**
 
-`███████████████████░` 93 %
+`███████████████████░` 97 %
 
 | Área | Estado | Detalle |
 |---|---|---|
@@ -69,7 +69,7 @@ TutoMind es una plataforma web educativa (PWA) integrada con **Moodle** que ofre
 | **Sprint 0** | hasta 24 nov | Fase 0 · Fundaciones | Contrato, esqueleto backend, Git y App Shell | ✅ 4 / 4 |
 | **Sprint 1** | 25 – 27 nov | Fase 1 · Núcleo | Auth, documentos, RAG y chat del tutor | ✅ 14 / 14 |
 | **Sprint 2** | 28 – 29 nov | Fase 2 · Analítica | Riesgo con XAI, temas, integración completa | ✅ 6 / 6 |
-| **Entrega** | 30 nov | Fase 3 · Pulido | QA, despliegue, documentación y demo | 🔄 3 / 5 |
+| **Entrega** | 30 nov | Fase 3 · Pulido | QA, despliegue, documentación y demo | 🔄 4 / 5 |
 
 ---
 
@@ -121,7 +121,7 @@ TutoMind es una plataforma web educativa (PWA) integrada con **Moodle** que ofre
 | [#25](https://github.com/Williamtrix2022/TutoMind/issues/25) | Pruebas end-to-end del flujo completo | Ambos | @Williamtrix2022 | ✅ | [#61](https://github.com/Williamtrix2022/TutoMind/pull/61) |
 | [#26](https://github.com/Williamtrix2022/TutoMind/issues/26) | Auditoría PWA, accesibilidad y rendimiento | Frontend | @Williamtrix2022 | ✅ | [#61](https://github.com/Williamtrix2022/TutoMind/pull/61) |
 | [#27](https://github.com/Williamtrix2022/TutoMind/issues/27) | Despliegue de frontend y backend | DevOps | @Williamtrix2022 | ✅ | [#64](https://github.com/Williamtrix2022/TutoMind/pull/64) |
-| [#28](https://github.com/Williamtrix2022/TutoMind/issues/28) | README final, guion de demo y presentación | Docs | @Williamtrix2022 | ⬜ | — |
+| [#28](https://github.com/Williamtrix2022/TutoMind/issues/28) | README final, guion de demo y presentación | Docs | @Williamtrix2022 | ✅ | [#65](https://github.com/Williamtrix2022/TutoMind/pull/65) |
 | [#29](https://github.com/Williamtrix2022/TutoMind/issues/29) | Merge `develop` → `main` y etiqueta `v0.1.0` | Release | @Williamtrix2022 | ⬜ | — |
 
 ---
@@ -263,6 +263,7 @@ Con el backend encendido, entra con los usuarios demo de arriba.
 Más reciente primero.
 
 ### 2026-11-26
+- README final, [guion de la demostración](GUION_DEMO.md) y diapositivas (10 láminas; el enlace es privado hasta que se comparta desde su menú *Share*) (#28) — [#65](https://github.com/Williamtrix2022/TutoMind/pull/65).
 - Despliegue gratuito publicado (#27): Vercel + Render + Neon; las pruebas end-to-end pasan contra la URL pública. Al desplegar se encontró y corrigió que `httpx` faltaba en las dependencias de producción — [#64](https://github.com/Williamtrix2022/TutoMind/pull/64).
 - Preparación del despliegue gratuito (#27): `render.yaml`, guía [`docs/DESPLIEGUE.md`](DESPLIEGUE.md), URL de base de datos con cualquier esquema, contraseña de demo por `DEMO_PASSWORD`, aviso de arranque en frío en el login y PDF de ejemplo del curso en `docs/demo/` — [#62](https://github.com/Williamtrix2022/TutoMind/pull/62).
 - Pruebas end-to-end con Playwright contra el backend real, auditoría de accesibilidad con axe (contraste y nombres accesibles corregidos), Lighthouse y nuevos iconos de la PWA (#25, #26) — [#61](https://github.com/Williamtrix2022/TutoMind/pull/61).
