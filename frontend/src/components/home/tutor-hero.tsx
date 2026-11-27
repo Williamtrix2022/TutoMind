@@ -29,7 +29,7 @@ export function TutorHero({ name }: { name: string | undefined }) {
       <div className="relative grid items-center gap-8 md:grid-cols-[minmax(0,1fr)_15rem]">
         <div className="space-y-6">
           <div className="space-y-3">
-            <p className="inline-flex items-center gap-2 rounded-full bg-primary/15 px-3 py-1 text-sm font-semibold text-primary">
+            <p className="inline-flex items-center gap-2 rounded-full bg-primary/15 px-3 py-1 text-sm font-semibold text-ink-primary">
               <Sparkles className="size-4" aria-hidden />
               {greeting}
               {who && `, ${who}`}

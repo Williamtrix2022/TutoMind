@@ -66,7 +66,7 @@ export function ClassThermometer({ score, questions, topics, alerts, period }: C
               transition={{ type: "spring", stiffness: 55, damping: 14, delay: 0.2 }}
             >
               <div className="-translate-x-1/2">
-                <span className="absolute -top-9 left-1/2 -translate-x-1/2 rounded-lg bg-fg px-2 py-1 text-xs font-bold tabular-nums text-canvas">
+                <span className="absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-fg px-2 py-1 text-xs font-bold tabular-nums text-canvas">
                   {Math.round(percent)} %
                 </span>
                 <span className="block size-8 rounded-full border-[5px] border-card bg-fg shadow-card" />

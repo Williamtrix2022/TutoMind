@@ -37,7 +37,7 @@ export function DocumentList({ documents, isLoading, errorMessage, onRetry }: Do
   if (errorMessage) {
     return (
       <div role="alert" className="flex flex-col items-start gap-3 py-2">
-        <p className="flex items-start gap-2 text-sm text-danger">
+        <p className="flex items-start gap-2 text-sm text-ink-danger">
           <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
           {errorMessage}
         </p>
@@ -80,7 +80,7 @@ export function DocumentList({ documents, isLoading, errorMessage, onRetry }: Do
               {formatBytes(doc.size_bytes)} · {formatRelative(doc.created_at)}
             </p>
             {doc.status === "failed" && doc.error_message && (
-              <p className="text-xs text-danger">{doc.error_message}</p>
+              <p className="text-xs text-ink-danger">{doc.error_message}</p>
             )}
           </div>
           <StatusBadge status={doc.status} />

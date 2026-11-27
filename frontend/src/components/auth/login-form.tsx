@@ -111,7 +111,7 @@ export function LoginForm() {
               className={`${inputClass} ${errors.email ? "border-danger" : "border-line"}`}
             />
             {errors.email && (
-              <p id={`${ids.email}-error`} className="text-sm text-danger">
+              <p id={`${ids.email}-error`} className="text-sm text-ink-danger">
                 {errors.email}
               </p>
             )}
@@ -142,14 +142,14 @@ export function LoginForm() {
               </button>
             </div>
             {errors.password && (
-              <p id={`${ids.password}-error`} className="text-sm text-danger">
+              <p id={`${ids.password}-error`} className="text-sm text-ink-danger">
                 {errors.password}
               </p>
             )}
           </div>
 
           {login.isError && (
-            <p role="alert" className="flex items-start gap-2 text-sm text-danger">
+            <p role="alert" className="flex items-start gap-2 text-sm text-ink-danger">
               <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
               {login.error.message}
             </p>

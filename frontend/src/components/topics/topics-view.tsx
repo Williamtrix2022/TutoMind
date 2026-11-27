@@ -81,7 +81,7 @@ export function TopicsView() {
               <h2 id="alerts-title" className="text-xl">
                 Necesitan atención
               </h2>
-              <ul className="grid gap-4 lg:grid-cols-2">
+              <ul className={`grid gap-4 ${alerts.length > 1 ? "lg:grid-cols-2" : ""}`}>
                 {alerts.map((topic, index) => (
                   <AlertTopicCard key={topic.topic} topic={topic} maxQuestions={maxQuestions} index={index} />
                 ))}
