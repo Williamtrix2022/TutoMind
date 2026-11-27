@@ -266,6 +266,7 @@ Con el backend encendido, entra con los usuarios demo de arriba.
 Más reciente primero.
 
 ### 2026-11-27
+- Ajustes del tutor tras verlo desplegado: el offline no busca material en mensajes frustrados y pregunta qué parte se complica, no cuela documentos por una palabra suelta, no repite la misma respuesta empática y el número de solicitud es corto — [#71](https://github.com/Williamtrix2022/TutoMind/pull/71), [#73](https://github.com/Williamtrix2022/TutoMind/pull/73), [#74](https://github.com/Williamtrix2022/TutoMind/pull/74).
 - Frontend alineado con el tutor explicativo: la oferta del docente aparece solo cuando el servidor la sugiere y pide confirmación, textos del inicio y del chat, mocks, prueba e2e y diapositivas — [#69](https://github.com/Williamtrix2022/TutoMind/pull/69).
 - Tutor explicativo y cercano en lugar de socrático; modo offline que presenta el material con formato limpio; filtro de relevancia del material (no mezcla materias); el docente se ofrece solo como última instancia y el ticket se crea al confirmar — [#67](https://github.com/Williamtrix2022/TutoMind/pull/67).
 
