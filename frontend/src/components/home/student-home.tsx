@@ -19,9 +19,9 @@ function HelpTile() {
             <LifeBuoy className="size-6" aria-hidden />
           </span>
           <div className="min-w-0 flex-1 space-y-0.5">
-            <h2 className="text-lg">¿Te trabaste?</h2>
+            <h2 className="text-lg">¿Sigues sin entender?</h2>
             <p className="text-sm text-muted">
-              Pide ayuda a tu docente desde el chat: recibe tu duda con todo el contexto de la conversación.
+              Si después de varias explicaciones sigues sin entender, tu tutor te ofrecerá enviar la duda a tu docente, con toda la conversación.
             </p>
           </div>
           <ArrowUpRight

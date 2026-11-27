@@ -36,7 +36,7 @@ export function TutorHero({ name }: { name: string | undefined }) {
             </p>
             <h1 className="text-4xl leading-[1.05] md:text-6xl">¿Qué repasamos hoy?</h1>
             <p className="max-w-md text-muted">
-              Tu tutor conoce el material de tus cursos y te guía paso a paso, sin darte la respuesta hecha.
+              Tu tutor conoce el material de tus cursos y te explica con claridad, con ejemplos prácticos y a tu ritmo.
             </p>
           </div>
 

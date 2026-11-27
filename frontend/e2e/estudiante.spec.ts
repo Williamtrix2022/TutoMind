@@ -17,12 +17,29 @@ test.describe("Estudiante", () => {
     await expect(page.getByRole("button", { name: /Enviar|Detener/ }).first()).toBeVisible();
   });
 
-  test("al notar frustración, el tutor ofrece ayuda del docente", async ({ page }) => {
+  test("el docente es la última instancia: se ofrece si la frustración persiste y solo se registra al aceptar", async ({
+    page,
+  }) => {
     await page.goto("/tutor");
     await page.waitForLoadState("networkidle");
-    await page.getByPlaceholder(/Pregunta lo que no te quedó claro/).fill("no entiendo nada, me rindo, esto es imposible");
+    const box = page.getByPlaceholder(/Pregunta lo que no te quedó claro/);
+    const log = page.getByRole("log", { name: "Conversación con el tutor" });
+    const offer = page.getByText("¿Quieres que le envíe esta consulta y nuestro historial al profesor");
+
+    // Una sola frase frustrada solo suaviza el tono: todavía no se ofrece el docente.
+    await box.fill("no entiendo nada, me rindo");
     await page.keyboard.press("Enter");
-    await expect(page.getByText("Este tema está costando, y es normal")).toBeVisible({ timeout: 30_000 });
+    await expect(log).toContainText("Te entiendo", { timeout: 30_000 });
+    await expect(offer).toHaveCount(0);
+
+    // Si la frustración persiste, el tutor ofrece enviar la duda y la conversación al docente.
+    await box.fill("sigo sin entender, esto es imposible, me rindo");
+    await page.keyboard.press("Enter");
+    await expect(offer).toBeVisible({ timeout: 30_000 });
+
+    // Nada se registra hasta que el estudiante acepta.
+    await page.getByRole("button", { name: "Sí, enviarla al profesor" }).click();
+    await expect(page.getByText("Listo, tu docente ya tiene tu consulta")).toBeVisible({ timeout: 30_000 });
   });
 
   test("las secciones de docente están bloqueadas", async ({ page }) => {

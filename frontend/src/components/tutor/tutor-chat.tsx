@@ -28,8 +28,8 @@ export function TutorChat({ initialQuestion }: { initialQuestion?: string }) {
   });
   const calm = frustration?.detected === true;
   const helpRequested = Boolean(escalation?.ticket_id);
-  // El banner ya ofrece ayuda si hay frustración o sugerencia; el botón sutil cubre "varios intentos".
-  const bannerShown = !helpRequested && (calm || escalation?.suggested === true);
+  // La oferta del docente solo aparece cuando el servidor la sugiere; el botón sutil cubre "varios intentos".
+  const bannerShown = !helpRequested && escalation?.suggested === true;
   const attempts = messages.filter((m) => m.role === "user").length;
   const offerInlineHelp = !helpRequested && !bannerShown && !isStreaming && attempts >= 3;
   const lastId = messages[messages.length - 1]?.id;
@@ -68,7 +68,7 @@ export function TutorChat({ initialQuestion }: { initialQuestion?: string }) {
         <div className="space-y-1">
           <h1 className="text-3xl md:text-4xl">Tutor</h1>
           <p className="max-w-prose text-sm text-muted">
-            Te guío paso a paso con el material de tu curso, sin darte la respuesta hecha.
+            Te explico con claridad, con el material de tu curso y con ejemplos, hasta que lo entiendas.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -149,7 +149,6 @@ export function TutorChat({ initialQuestion }: { initialQuestion?: string }) {
       {/* Borde de scroll: el contenido se desvanece bajo el compositor en lugar de cortarse. */}
       <div className="sticky bottom-[calc(6rem+env(safe-area-inset-bottom))] z-30 mt-6 bg-gradient-to-t from-canvas from-75% to-transparent pt-8 md:bottom-0 md:pb-4">
         <SupportBanner
-          frustration={frustration}
           escalation={escalation}
           disabled={isStreaming}
           onRequestHelp={() => void requestHelp()}

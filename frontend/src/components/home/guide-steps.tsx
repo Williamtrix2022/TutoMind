@@ -22,14 +22,14 @@ const STEPS: Step[] = [
   },
   {
     icon: Lightbulb,
-    title: "Él te da pistas",
-    text: "Te hace preguntas y te muestra el camino con tu material.",
+    title: "Te lo explica",
+    text: "Con tu material, lenguaje sencillo y un ejemplo práctico.",
     tint: "bg-highlight/30 text-ink-caution",
   },
   {
     icon: PartyPopper,
-    title: "Tú lo resuelves",
-    text: "El mérito es tuyo: llegas a la respuesta y la entiendes.",
+    title: "Verificas que quedó claro",
+    text: "Si no, te lo explica de otra forma hasta que lo entiendas.",
     tint: "bg-success/20 text-ink-success",
   },
 ];
@@ -40,7 +40,7 @@ export function GuideSteps() {
     <Card className="space-y-6">
       <div className="space-y-1">
         <h2 className="text-xl">Así te acompaña tu tutor</h2>
-        <p className="text-sm text-muted">No te da la respuesta hecha: aprendes haciéndola.</p>
+        <p className="text-sm text-muted">Explicaciones claras, con ejemplos, hasta que lo entiendas.</p>
       </div>
 
       <ol className="relative grid gap-5 sm:grid-cols-3">
