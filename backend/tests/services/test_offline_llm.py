@@ -93,6 +93,18 @@ def test_offline_tutor_says_so_when_the_course_has_nothing_on_the_subject():
     assert "Lo esencial de" not in text
 
 
+def test_offline_tutor_asks_what_part_is_hard_instead_of_searching_when_frustrated():
+    client = OfflineLLMClient(settings())
+
+    text = "".join(
+        asyncio.run(collect(client, question("no entiendo nada"), material(empathetic=True)))
+    )
+
+    assert "Te entiendo" in text
+    assert "qué parte exacta se te complica" in text
+    assert "no encontré nada" not in text
+
+
 def test_offline_tutor_varies_its_opening_by_question_but_is_deterministic():
     client = OfflineLLMClient(settings())
 

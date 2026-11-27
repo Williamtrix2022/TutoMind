@@ -8,7 +8,8 @@ Python question would get calculus notes). `Relevance` says how close a chunk mu
   diluted with weaker matches from other subjects.
 - `lexical_min_score`: for the offline hashing embedder, whose distances barely separate topics,
   require shared *rare* vocabulary. A word counts more the fewer candidate chunks contain it, so
-  "función" (everywhere) says little and "integrales" or "cadena" say a lot.
+  "función" (everywhere) says little and "integrales" or "cadena" say a lot. The best match is the
+  chunk with the most question words; another document must match as many to be shown too.
 """
 
 import math
@@ -23,13 +24,16 @@ from app.services.lexical import vocabulary
 DEFAULT_TOP_K = 4
 POOL_FACTOR = 3  # candidates fetched per chunk finally returned, before the relevance filter
 _MIN_POOL_FOR_IDF = 10  # with a tiny course every word looks rare: do not over-trust the counts
-_LEXICAL_KEEP_RATIO = 0.6  # keep chunks scoring at least this fraction of the best one
 # Words that appear in every subject ("una función en JavaScript", "una función lineal"): sharing
 # one says nothing about the topic, so they never count as evidence for the lexical filter.
 GENERIC_TERMS = frozenset(
     "funcion ejemplo ejercicio problema metodo valor concepto tema forma caso resultado "
     "explica explicame ayuda ayudame repasar escribe escribir escribo hace hacer usar usa uso "
-    "sirve cuando".split()
+    "sirve cuando "
+    # How the student feels or that they did not get it says nothing about the subject:
+    "entender entiendo entendi comprender comprendo imposible rindo rendir sigo puedo nada claro "
+    "frustrado frustrada cansado cansada harto harta perdido perdida confundido confundida "
+    "gracias".split()
 )
 
 
@@ -50,8 +54,8 @@ class RetrievedChunk:
     distance: float | None = None  # cosine distance to the question (0 = identical)
 
 
-def _lexical_scores(question: str, pool: list[RetrievedChunk]) -> list[float]:
-    """Sum of the rarity of each question word that the chunk also contains."""
+def _lexical_matches(question: str, pool: list[RetrievedChunk]) -> list[tuple[int, float]]:
+    """Per chunk: how many question words it contains, and how rare those words are."""
     asked = vocabulary(question) - GENERIC_TERMS
     vocabularies = [vocabulary(chunk.content) for chunk in pool]
     size = max(len(pool), _MIN_POOL_FOR_IDF)
@@ -60,7 +64,9 @@ def _lexical_scores(question: str, pool: list[RetrievedChunk]) -> list[float]:
         containing = sum(term in words for words in vocabularies)
         return math.log((size + 1) / (containing + 0.5))
 
-    return [sum(rarity(term) for term in asked & words) for words in vocabularies]
+    return [
+        (len(asked & words), sum(rarity(term) for term in asked & words)) for words in vocabularies
+    ]
 
 
 def select_relevant(
@@ -82,12 +88,18 @@ def select_relevant(
             kept = [c for c in kept if c.distance is None or c.distance <= limit]
 
     if relevance.lexical_min_score is not None and question is not None and kept:
-        scores = dict(zip(map(id, pool), _lexical_scores(question, pool), strict=True))
-        best = max(scores[id(c)] for c in kept)
-        floor = max(relevance.lexical_min_score, best * _LEXICAL_KEEP_RATIO)
-        kept = [c for c in kept if scores[id(c)] >= floor]
-        # Best vocabulary match first; ties keep the vector order (nearest first).
-        kept.sort(key=lambda c: -scores[id(c)])
+        matches = dict(zip(map(id, pool), _lexical_matches(question, pool), strict=True))
+        eligible = [c for c in kept if matches[id(c)][1] >= relevance.lexical_min_score]
+        if eligible:
+            most = max(matches[id(c)][0] for c in eligible)
+            leaders = {c.document_id for c in eligible if matches[id(c)][0] == most}
+            # Chunks of the leading document may contain fewer of the words (a title split across
+            # chunks); a chunk of any other document must contain as many as the leader does.
+            eligible = [
+                c for c in eligible if matches[id(c)][0] >= most or c.document_id in leaders
+            ]
+        # Most question words first, then the rarest; ties keep the vector order (nearest first).
+        kept = sorted(eligible, key=lambda c: (-matches[id(c)][0], -matches[id(c)][1]))
 
     return kept[:k]
 
