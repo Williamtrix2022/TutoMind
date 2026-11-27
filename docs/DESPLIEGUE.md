@@ -42,7 +42,7 @@ El orden importa: la base primero, luego el servidor (necesita la URL de la base
    - `DATABASE_URL`: la cadena de Neon.
    - `DEMO_PASSWORD`: la contraseña de las cuentas de demo (`docente@tutomind.demo`, `ana@tutomind.demo`, …). Que no sea `demo12345`; entrégala al profe en privado.
    - `CORS_ORIGINS`: la URL que tendrá Vercel (por ejemplo `https://tutomind.vercel.app`). Puede ir varias, separadas por coma.
-   - `GEMINI_API_KEY`: opcional. Sin clave el tutor funciona con el cliente offline.
+   - `GEMINI_API_KEY`: opcional y no se pide al crear. Agrégala después en *Environment*; sin clave el tutor funciona con el cliente offline.
 3. `JWT_SECRET` lo genera Render. Con `ENVIRONMENT=production` el servidor **no arranca** sin un secreto de al menos 32 caracteres.
 4. Cuando termine, comprueba `https://<tu-servicio>.onrender.com/health` (debe responder 200) y `/docs`.
 
