@@ -36,6 +36,17 @@ def request_body(operation: dict, spec: dict) -> dict | None:
     return {"content_type": content_type, "schema": canon(media["schema"], schemas)}
 
 
+def parameters(operation: dict, spec: dict) -> dict[tuple[str, str], tuple[bool, dict]]:
+    """(name, location) -> (required, resolved schema), following `$ref` parameters."""
+    found = {}
+    for param in operation.get("parameters", []):
+        if "$ref" in param:
+            param = spec["components"]["parameters"][param["$ref"].rsplit("/", 1)[-1]]
+        schema = canon(param["schema"], spec["components"]["schemas"])
+        found[(param["name"], param["in"])] = (param.get("required", False), schema)
+    return found
+
+
 def response_bodies(operation: dict, spec: dict) -> dict[str, tuple[str, dict] | None]:
     """Per status: content type + fully resolved schema (None when there is no body)."""
     schemas = spec["components"]["schemas"]
@@ -67,6 +78,12 @@ def test_operation_matches_the_contract(path, method):
     else:
         assert actual_body["content_type"] == expected_body["content_type"]
         assert compare(expected_body["schema"], actual_body["schema"], "body") == []
+
+    expected_params, actual_params = parameters(expected, CONTRACT), parameters(actual, GENERATED)
+    assert set(actual_params) == set(expected_params)
+    for key, (required, schema) in expected_params.items():
+        assert actual_params[key][0] == required, f"{key}: required"
+        assert compare(schema, actual_params[key][1], f"param {key}", optional=not required) == []
 
     expected_responses = response_bodies(expected, CONTRACT)
     actual_responses = response_bodies(actual, GENERATED)

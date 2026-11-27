@@ -20,7 +20,7 @@ export function SampleQuestions({ questions }: { questions: string[] | undefined
         aria-expanded={open}
         aria-controls={panelId}
         onClick={() => setOpen((value) => !value)}
-        className="inline-flex items-center gap-1.5 rounded-xl py-1.5 pr-2 text-sm font-semibold text-primary transition-colors hover:text-fg"
+        className="inline-flex items-center gap-1.5 rounded-xl py-1.5 pr-2 text-sm font-semibold text-ink-primary transition-colors hover:text-fg"
       >
         <MessageCircleQuestion className="size-4" aria-hidden />
         {open ? "Ocultar preguntas" : `Ver ${questions.length === 1 ? "la pregunta" : `${questions.length} preguntas`} de ejemplo`}

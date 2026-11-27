@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "gen:api": "openapi-typescript ../docs/openapi.json -o src/lib/api/schema.d.ts"
+    "gen:api": "openapi-typescript ../docs/openapi.json -o src/lib/api/schema.d.ts",
+    "e2e": "playwright test --grep-invert \"capturas|debug-axe\"",
+    "e2e:capturas": "playwright test capturas"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.108.4",
@@ -23,7 +25,9 @@
     "remark-math": "^6.0.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.1",
     "@eslint/eslintrc": "^3",
+    "@playwright/test": "^1.65.1",
     "@tailwindcss/postcss": "^4",
     "@types/katex": "^0.16.8",
     "@types/node": "^20",

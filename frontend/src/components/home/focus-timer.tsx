@@ -97,7 +97,7 @@ export function FocusTimer() {
             <p role="timer" className="text-4xl font-extrabold tabular-nums tracking-tight">
               {clock(left)}
             </p>
-            <p className="mt-1 text-xs text-muted">{mode === "focus" ? "Enfócate en una sola cosa" : "Respira y estírate"}</p>
+            <p className="mt-1 text-xs text-muted">{mode === "focus" ? "Enfoque" : "Pausa"}</p>
           </div>
         </div>
       </div>

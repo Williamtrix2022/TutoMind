@@ -2,7 +2,15 @@ import pytest
 from pydantic import TypeAdapter
 from sqlalchemy import select
 
-from app.db.models import Conversation, Course, Document, DocumentChunk, Message, SupportTicket
+from app.db.models import (
+    Conversation,
+    Course,
+    Document,
+    DocumentChunk,
+    Enrollment,
+    Message,
+    SupportTicket,
+)
 from app.schemas import TutorStreamEvent
 from app.services.embeddings import HashingEmbedder
 from app.services.llm import get_llm_client
@@ -107,6 +115,40 @@ class TestStreaming:
             ("assistant", "Hola mundo"),
         ]
 
+    def test_the_frustration_score_of_the_student_message_is_stored(
+        self, api, session, student, auth, spy
+    ):
+        chat(api, student, auth, text="no entiendo")
+
+        stored = session.scalars(select(Message).order_by(Message.id)).all()
+        assert stored[0].role == "user" and stored[0].frustration_score >= 0.5
+        assert stored[1].role == "assistant" and stored[1].frustration_score is None
+
+    def test_the_topic_of_the_question_comes_from_the_matching_material(
+        self, api, session, student, auth, spy
+    ):
+        add_material(session, "c1", "d1", "Guía de derivadas", "la derivada mide el cambio")
+
+        chat(api, student, auth, text="¿cómo se calcula la derivada?")
+
+        stored = session.scalars(select(Message).order_by(Message.id)).all()
+        assert (stored[0].role, stored[0].topic) == ("user", "Guía de derivadas")
+        assert stored[1].topic is None  # the tutor's reply has no topic
+
+    def test_a_question_the_material_does_not_cover_is_filed_under_other_topics(
+        self, api, session, student, auth, spy
+    ):
+        add_material(session, "c1", "d1", "Biología", "la mitocondria produce energía")
+
+        chat(api, student, auth, text="¿cuándo es el examen final?")
+
+        assert session.scalars(select(Message).order_by(Message.id)).first().topic == "Otros temas"
+
+    def test_asking_for_a_human_is_not_a_topic(self, api, session, student, auth, spy):
+        chat(api, student, auth, request_human_help=True)
+
+        assert session.scalars(select(Message).order_by(Message.id)).first().topic is None
+
     def test_an_existing_conversation_is_continued(self, api, session, student, auth, spy):
         first = parse_sse(chat(api, student, auth).text)[-1]["conversation_id"]
 
@@ -150,6 +192,60 @@ class TestRetrieval:
 
         assert "sources" not in types(events)
         assert "No hay material del curso relevante" in spy.calls[0][1]
+
+
+class TestMoodleLinks:
+    BASE = "https://moodle.example.edu"
+
+    @pytest.fixture
+    def moodle_course(self, session, student):
+        session.add(Course(id="101", name="Cálculo (Moodle)"))
+        session.flush()
+        session.add(Enrollment(course_id="101", user_id=student.id))
+        session.flush()
+
+    def cited(self, api, student, auth):
+        events = parse_sse(chat(api, student, auth, text="derivada y cambio", course_id="101").text)
+        return next(e for e in events if e["type"] == "sources")["sources"][0]
+
+    def test_citations_link_to_the_course_in_moodle_when_configured(
+        self, api, session, student, auth, spy, settings, moodle_course
+    ):
+        settings.moodle_base_url = self.BASE
+        add_material(session, "101", "d1", "Guía", "la derivada mide el cambio")
+
+        source = self.cited(api, student, auth)
+
+        assert source["moodle_url"] == f"{self.BASE}/course/view.php?id=101"
+
+    def test_a_documents_own_moodle_link_wins(
+        self, api, session, student, auth, spy, settings, moodle_course
+    ):
+        settings.moodle_base_url = self.BASE
+        add_material(session, "101", "d1", "Guía", "la derivada mide el cambio")
+        session.get(Document, "d1").moodle_url = f"{self.BASE}/mod/resource/view.php?id=7"
+        session.flush()
+
+        assert self.cited(api, student, auth)["moodle_url"].endswith("/mod/resource/view.php?id=7")
+
+    def test_without_moodle_there_is_no_link(
+        self, api, session, student, auth, spy, settings, moodle_course
+    ):
+        add_material(session, "101", "d1", "Guía", "la derivada mide el cambio")
+
+        assert "moodle_url" not in self.cited(api, student, auth)
+
+    def test_a_malformed_stored_link_does_not_break_the_answer(
+        self, api, session, student, auth, spy, settings, moodle_course
+    ):
+        add_material(session, "101", "d1", "Guía", "la derivada mide el cambio")
+        session.get(Document, "d1").moodle_url = "not a url"
+        session.flush()
+
+        events = parse_sse(chat(api, student, auth, text="derivada y cambio", course_id="101").text)
+
+        assert types(events)[-1] == "done"
+        assert "moodle_url" not in next(e for e in events if e["type"] == "sources")["sources"][0]
 
 
 class TestPedagogy:

@@ -33,6 +33,7 @@ from app.services.frustration import Assessment, assess
 from app.services.llm import LLMClient
 from app.services.retrieval import RetrievedChunk, retrieve_chunks
 from app.services.tickets import open_ticket
+from app.services.topics import topic_for
 from app.services.tutor_prompt import (
     asks_for_full_solution,
     build_prompt,
@@ -96,15 +97,29 @@ def _conversation_for(session: Session, user: User, body: TutorChatRequest) -> C
 
 
 def prepare_turn(
-    session: Session, user: User, body: TutorChatRequest, query_vector: list[float] | None
+    session: Session,
+    user: User,
+    body: TutorChatRequest,
+    query_vector: list[float] | None,
+    course_url: str | None = None,
 ) -> Turn:
     question = body.messages[-1].content
     conversation = _conversation_for(session, user, body)
-    session.add(Message(conversation_id=conversation.id, role="user", content=question))
-
     assessment = assess(body.messages, body.request_human_help)
     chunks = (
-        retrieve_chunks(session, body.course_id, query_vector) if query_vector is not None else []
+        retrieve_chunks(session, body.course_id, query_vector, course_url=course_url)
+        if query_vector is not None
+        else []
+    )
+    session.add(
+        Message(
+            conversation_id=conversation.id,
+            role="user",
+            content=question,
+            frustration_score=assessment.frustration.score,
+            # Asking for a human is not a subject of study; so is a question we could not search.
+            topic=topic_for(question, chunks) if query_vector is not None else None,
+        )
     )
 
     ticket_id = None
@@ -140,6 +155,18 @@ def _save_reply(session_factory: SessionFactory, conversation_id: str, reply: st
 def _frame(event: BaseModel) -> str:
     # Optional fields the contract does not declare nullable must be absent, not `null`.
     return f"data: {json.dumps(event.model_dump(mode='json', exclude_none=True))}\n\n"
+
+
+def _citation(chunk: RetrievedChunk) -> SourceCitation:
+    try:
+        return SourceCitation(
+            document_id=chunk.document_id,
+            title=chunk.title,
+            page=chunk.page,
+            moodle_url=chunk.moodle_url,
+        )
+    except ValueError:  # a malformed stored link must not break the answer: cite without it
+        return SourceCitation(document_id=chunk.document_id, title=chunk.title, page=chunk.page)
 
 
 def _words(text: str) -> list[str]:
@@ -180,10 +207,7 @@ async def stream_events(
     if turn.chunks:
         cited: dict[str, SourceCitation] = {}
         for chunk in turn.chunks:
-            cited.setdefault(
-                chunk.document_id,
-                SourceCitation(document_id=chunk.document_id, title=chunk.title, page=chunk.page),
-            )
+            cited.setdefault(chunk.document_id, _citation(chunk))
         yield _frame(SourcesEvent(type="sources", sources=list(cited.values())))
 
     reason: Literal["student_requested", "persistent_frustration"] | None

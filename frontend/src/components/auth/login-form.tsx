@@ -9,6 +9,7 @@ import { LogoMark } from "@/components/brand/logo-mark";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { useLogin } from "@/lib/api/hooks/use-auth";
 import { spring, tap } from "@/lib/motion";
+import { useAfterDelay, useServerWakeUp } from "@/lib/hooks/use-server-wakeup";
 import { useApp } from "@/lib/providers/app-providers";
 import type { Role } from "@/lib/types";
 
@@ -44,6 +45,8 @@ export function LoginForm() {
   const router = useRouter();
   const { role: demoRole, authStatus, signIn } = useApp();
   const login = useLogin();
+  useServerWakeUp();
+  const waking = useAfterDelay(login.isPending, 4000);
   const ids = { email: useId(), password: useId() };
 
   const [role, setRole] = useState<Role>(demoRole);
@@ -111,7 +114,7 @@ export function LoginForm() {
               className={`${inputClass} ${errors.email ? "border-danger" : "border-line"}`}
             />
             {errors.email && (
-              <p id={`${ids.email}-error`} className="text-sm text-danger">
+              <p id={`${ids.email}-error`} className="text-sm text-ink-danger">
                 {errors.email}
               </p>
             )}
@@ -142,14 +145,14 @@ export function LoginForm() {
               </button>
             </div>
             {errors.password && (
-              <p id={`${ids.password}-error`} className="text-sm text-danger">
+              <p id={`${ids.password}-error`} className="text-sm text-ink-danger">
                 {errors.password}
               </p>
             )}
           </div>
 
           {login.isError && (
-            <p role="alert" className="flex items-start gap-2 text-sm text-danger">
+            <p role="alert" className="flex items-start gap-2 text-sm text-ink-danger">
               <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
               {login.error.message}
             </p>
@@ -165,6 +168,12 @@ export function LoginForm() {
             {login.isPending && <LoaderCircle className="size-4 animate-spin" aria-hidden />}
             {login.isPending ? "Entrando…" : "Entrar"}
           </motion.button>
+
+          {waking && (
+            <p role="status" className="text-center text-sm text-muted">
+              El servidor estaba dormido y está despertando. Puede tardar hasta un minuto.
+            </p>
+          )}
         </form>
       </motion.div>
     </main>

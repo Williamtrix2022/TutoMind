@@ -1,0 +1,28 @@
+# Backend de TutoMind en Render (plan gratuito). Ver docs/DESPLIEGUE.md.
+# Las variables con `sync: false` se escriben a mano en el panel de Render (son secretos o dependen de otros servicios).
+services:
+  - type: web
+    name: tutomind-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    # Migraciones y semilla en cada arranque (el plan gratuito no tiene consola). Ambas son idempotentes:
+    # no repiten lo que ya existe y la semilla refresca los datos simulados de actividad.
+    startCommand: alembic upgrade head && python -m app.db.seed && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.8
+      - key: ENVIRONMENT
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: DEMO_PASSWORD
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false

@@ -35,7 +35,7 @@ export function UploadItem({ entry, onRemove, onRetry }: UploadItemProps) {
         </div>
 
         {failed ? (
-          <p role="alert" className="text-sm text-danger">
+          <p role="alert" className="text-sm text-ink-danger">
             {entry.error}
           </p>
         ) : (

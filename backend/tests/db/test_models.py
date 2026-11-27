@@ -1,9 +1,19 @@
+from datetime import UTC, datetime
+
 import pytest
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
 from app.core.config import Settings
-from app.db.models import Course, Document, DocumentChunk, User
+from app.db.models import (
+    Conversation,
+    Course,
+    Document,
+    DocumentChunk,
+    Message,
+    StudentEvent,
+    User,
+)
 
 DIM = Settings(_env_file=None).embedding_dimensions
 
@@ -140,3 +150,42 @@ def test_chunk_index_is_unique_per_document(session):
 
     with pytest.raises(IntegrityError):
         session.flush()
+
+
+def test_unknown_event_type_is_rejected(session):
+    make_course(session)
+    session.add(User(id="s1", name="A", email="a@x.edu", password_hash="h", role="student"))
+    session.flush()
+    session.add(
+        StudentEvent(course_id="c1", user_id="s1", type="teleport", occurred_at=datetime.now(UTC))
+    )
+
+    with pytest.raises(IntegrityError):
+        session.flush()
+
+
+@pytest.mark.parametrize("score", [-0.1, 1.5])
+def test_frustration_score_must_be_between_0_and_1(session, score):
+    make_course(session)
+    session.add(User(id="s1", name="A", email="a@x.edu", password_hash="h", role="student"))
+    session.flush()
+    session.add(Conversation(id="conv", course_id="c1", student_id="s1"))
+    session.flush()
+    session.add(Message(conversation_id="conv", role="user", content="x", frustration_score=score))
+
+    with pytest.raises(IntegrityError):
+        session.flush()
+
+
+def test_a_message_can_carry_a_topic(session):
+    make_course(session)
+    session.add(User(id="s1", name="A", email="a@x.edu", password_hash="h", role="student"))
+    session.flush()
+    session.add(Conversation(id="conv", course_id="c1", student_id="s1"))
+    session.flush()
+    message = Message(conversation_id="conv", role="user", content="x", topic="Derivadas")
+    session.add(message)
+    session.flush()
+    session.refresh(message)
+
+    assert message.topic == "Derivadas"
