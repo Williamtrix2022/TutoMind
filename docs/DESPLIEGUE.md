@@ -14,20 +14,19 @@ El orden importa: la base primero, luego el servidor (necesita la URL de la base
 1. Crea un proyecto y una base (por ejemplo `tutomind`), región cercana al servidor de Render.
 2. Copia la **cadena de conexión** (`postgresql://usuario:clave@host/db?sslmode=require`). El backend le agrega el driver solo.
 3. Activa pgvector en la base: `CREATE EXTENSION IF NOT EXISTS vector;`
-4. Desde tu PC, con el entorno del backend activo, crea el esquema y los datos de demo **apuntando a Neon**:
+4. **No hace falta sembrar desde tu PC**: el servidor de Render corre las migraciones y la semilla en cada arranque (ver `startCommand` en `render.yaml`). Si prefieres hacerlo a mano, con el entorno del backend activo:
    ```bash
    cd backend
-   export DATABASE_URL="<la cadena de Neon>"
-   export DEMO_PASSWORD="<una contraseña que no sea demo12345>"
-   alembic upgrade head
-   python -m app.db.seed
+   export DATABASE_URL="<la cadena de Neon>" DEMO_PASSWORD="<contraseña de demo>"
+   alembic upgrade head && python -m app.db.seed
    ```
-   `DEMO_PASSWORD` fija la contraseña de las cuentas de demo (`docente@tutomind.demo`, `ana@tutomind.demo`, …). Entrégala al profe en privado.
+   Algunas redes bloquean el puerto 5432 de PostgreSQL; si pasa, deja que lo haga Render.
 
 ## 2. Render (backend)
 1. *New → Blueprint* y elige este repositorio: Render lee `render.yaml`.
 2. Completa las variables que pide:
    - `DATABASE_URL`: la cadena de Neon.
+   - `DEMO_PASSWORD`: la contraseña de las cuentas de demo (`docente@tutomind.demo`, `ana@tutomind.demo`, …). Que no sea `demo12345`; entrégala al profe en privado.
    - `CORS_ORIGINS`: la URL que tendrá Vercel (por ejemplo `https://tutomind.vercel.app`). Puede ir varias, separadas por coma.
    - `GEMINI_API_KEY`: opcional. Sin clave el tutor funciona con el cliente offline.
 3. `JWT_SECRET` lo genera Render. Con `ENVIRONMENT=production` el servidor **no arranca** sin un secreto de al menos 32 caracteres.

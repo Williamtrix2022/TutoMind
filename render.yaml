@@ -7,8 +7,9 @@ services:
     plan: free
     rootDir: backend
     buildCommand: pip install -r requirements.txt
-    # Las migraciones corren en cada arranque: el plan gratuito no tiene consola.
-    startCommand: alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    # Migraciones y semilla en cada arranque (el plan gratuito no tiene consola). Ambas son idempotentes:
+    # no repiten lo que ya existe y la semilla refresca los datos simulados de actividad.
+    startCommand: alembic upgrade head && python -m app.db.seed && uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     envVars:
       - key: PYTHON_VERSION
@@ -18,6 +19,8 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: DATABASE_URL
+        sync: false
+      - key: DEMO_PASSWORD
         sync: false
       - key: CORS_ORIGINS
         sync: false
