@@ -1,4 +1,4 @@
-"""Todo import de `app/` debe estar en requirements.txt (producción), no solo en el de desarrollo."""
+"""Todo import de `app/` debe estar en requirements.txt (producción), no solo en el dev."""
 
 import re
 import sys
