@@ -120,7 +120,7 @@ TutoMind es una plataforma web educativa (PWA) integrada con **Moodle** que ofre
 |---|---|---|---|---|---|
 | [#25](https://github.com/Williamtrix2022/TutoMind/issues/25) | Pruebas end-to-end del flujo completo | Ambos | @Williamtrix2022 | ✅ | [#61](https://github.com/Williamtrix2022/TutoMind/pull/61) |
 | [#26](https://github.com/Williamtrix2022/TutoMind/issues/26) | Auditoría PWA, accesibilidad y rendimiento | Frontend | @Williamtrix2022 | ✅ | [#61](https://github.com/Williamtrix2022/TutoMind/pull/61) |
-| [#27](https://github.com/Williamtrix2022/TutoMind/issues/27) | Despliegue de frontend y backend | DevOps | @Williamtrix2022 | ✅ | PR_DEPLOY2 |
+| [#27](https://github.com/Williamtrix2022/TutoMind/issues/27) | Despliegue de frontend y backend | DevOps | @Williamtrix2022 | ✅ | [#64](https://github.com/Williamtrix2022/TutoMind/pull/64) |
 | [#28](https://github.com/Williamtrix2022/TutoMind/issues/28) | README final, guion de demo y presentación | Docs | @Williamtrix2022 | ⬜ | — |
 | [#29](https://github.com/Williamtrix2022/TutoMind/issues/29) | Merge `develop` → `main` y etiqueta `v0.1.0` | Release | @Williamtrix2022 | ⬜ | — |
 
@@ -263,7 +263,7 @@ Con el backend encendido, entra con los usuarios demo de arriba.
 Más reciente primero.
 
 ### 2026-11-26
-- Despliegue gratuito publicado (#27): Vercel + Render + Neon; las pruebas end-to-end pasan contra la URL pública. Al desplegar se encontró y corrigió que `httpx` faltaba en las dependencias de producción — PR_DEPLOY2.
+- Despliegue gratuito publicado (#27): Vercel + Render + Neon; las pruebas end-to-end pasan contra la URL pública. Al desplegar se encontró y corrigió que `httpx` faltaba en las dependencias de producción — [#64](https://github.com/Williamtrix2022/TutoMind/pull/64).
 - Preparación del despliegue gratuito (#27): `render.yaml`, guía [`docs/DESPLIEGUE.md`](DESPLIEGUE.md), URL de base de datos con cualquier esquema, contraseña de demo por `DEMO_PASSWORD`, aviso de arranque en frío en el login y PDF de ejemplo del curso en `docs/demo/` — [#62](https://github.com/Williamtrix2022/TutoMind/pull/62).
 - Pruebas end-to-end con Playwright contra el backend real, auditoría de accesibilidad con axe (contraste y nombres accesibles corregidos), Lighthouse y nuevos iconos de la PWA (#25, #26) — [#61](https://github.com/Williamtrix2022/TutoMind/pull/61).
 - Backend: integración con Moodle (cliente de Web Services, ingesta idempotente de eventos, enlaces en las citas y datos simulados documentados) (#24) — [#60](https://github.com/Williamtrix2022/TutoMind/pull/60).
