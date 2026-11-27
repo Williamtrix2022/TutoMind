@@ -14,6 +14,7 @@ from app.db.models import (
 from app.schemas import TutorStreamEvent
 from app.services.embeddings import HashingEmbedder
 from app.services.llm import get_llm_client
+from app.services.retrieval import Relevance
 from app.services.tutor_prompt import (
     EMPATHY_MARKER,
     LEVEL_GUIDANCE,
@@ -194,6 +195,40 @@ class TestRetrieval:
         assert "No hay material del curso relevante" in spy.calls[0][1]
 
 
+class TestRelevance:
+    def test_material_beyond_the_distance_cap_is_not_used(self, api, session, student, auth, spy):
+        add_material(session, "c1", "d1", "Guía", "la derivada mide el cambio")
+        spy.relevance = Relevance(max_distance=0.0)  # nothing is close enough
+
+        events = parse_sse(chat(api, student, auth, text="derivada y cambio").text)
+
+        assert "sources" not in types(events)
+        assert "No hay material del curso relevante" in spy.calls[0][1]
+
+    def test_a_question_about_another_subject_does_not_get_unrelated_notes(
+        self, api, session, student, auth, spy
+    ):
+        add_material(session, "c1", "d1", "Cálculo integral", "la integral definida mide el área")
+        spy.relevance = Relevance(max_distance=0.985, lexical_min_score=0.8)
+
+        events = parse_sse(
+            chat(api, student, auth, text="¿cómo declaro una variable en Python?").text
+        )
+
+        assert "sources" not in types(events)
+        assert "área" not in spy.calls[0][1]
+
+    def test_related_material_still_comes_through_with_the_offline_relevance(
+        self, api, session, student, auth, spy
+    ):
+        add_material(session, "c1", "d1", "Cálculo integral", "la integral definida mide el área")
+        spy.relevance = Relevance(max_distance=0.985, lexical_min_score=0.8)
+
+        events = parse_sse(chat(api, student, auth, text="integral definida y área").text)
+
+        assert "sources" in types(events)
+
+
 class TestMoodleLinks:
     BASE = "https://moodle.example.edu"
 
@@ -294,7 +329,7 @@ class TestFrustration:
         assert "frustration" not in types(events)
         assert EMPATHY_MARKER not in spy.calls[0][1]
 
-    def test_persistent_frustration_escalates_and_opens_a_ticket(
+    def test_persistent_frustration_offers_the_teacher_without_opening_a_ticket(
         self, api, session, student, auth, spy
     ):
         history = [user_msg("no entiendo"), tutor_msg(), user_msg("sigo sin entender")]
@@ -304,11 +339,60 @@ class TestFrustration:
         escalation = next(e for e in events if e["type"] == "escalation")["escalation"]
         assert escalation["suggested"] is True
         assert escalation["reason"] == "persistent_frustration"
-        ticket = session.get(SupportTicket, escalation["ticket_id"])
-        assert (ticket.status, ticket.reason, ticket.student_id) == (
-            "open", "persistent_frustration", "s1",
-        )  # fmt: skip
+        assert "ticket_id" not in escalation  # an offer, not yet a request
+        assert session.scalars(select(SupportTicket)).all() == []
         assert types(events)[-1] == "done"
+
+    def test_still_lost_after_two_explanations_offers_the_teacher(
+        self, api, session, student, auth, spy
+    ):
+        history = [
+            user_msg("¿cómo derivo una compuesta?"),
+            tutor_msg("Primero..."),
+            user_msg("sigue sin quedarme claro"),
+            tutor_msg("Otra forma..."),
+        ]
+
+        events = parse_sse(
+            chat(api, student, auth, text="todavía no lo entiendo", history=history).text
+        )
+
+        escalation = next(e for e in events if e["type"] == "escalation")["escalation"]
+        assert (escalation["suggested"], escalation["reason"]) == (True, "repeated_failure")
+        assert "ticket_id" not in escalation
+        assert session.scalars(select(SupportTicket)).all() == []
+
+    def test_the_teacher_is_not_offered_after_a_single_frustrated_message(
+        self, api, session, student, auth, spy
+    ):
+        events = parse_sse(chat(api, student, auth, text="no entiendo nada").text)
+
+        assert "frustration" in types(events)  # the tone adapts...
+        assert "escalation" not in types(events)  # ...but the teacher is the last resort
+
+    def test_confirming_the_offer_registers_the_ticket_for_the_teachers_panel(
+        self, api, session, student, auth, spy
+    ):
+        offered = parse_sse(
+            chat(
+                api, student, auth, text="me rindo",
+                history=[user_msg("no entiendo"), tutor_msg(), user_msg("sigo sin entender")],
+            ).text
+        )  # fmt: skip
+        conversation_id = offered[-1]["conversation_id"]
+        assert session.scalars(select(SupportTicket)).all() == []
+
+        confirmed = parse_sse(
+            chat(api, student, auth, request_human_help=True, conversation_id=conversation_id).text
+        )
+
+        escalation = next(e for e in confirmed if e["type"] == "escalation")["escalation"]
+        ticket = session.get(SupportTicket, escalation["ticket_id"])
+        assert (ticket.status, ticket.reason, ticket.student_id, ticket.conversation_id) == (
+            "open", "student_requested", "s1", conversation_id,
+        )  # fmt: skip
+        reply = "".join(e["content"] for e in confirmed if e["type"] == "token")
+        assert "panel" in reply  # the confirmation says the teacher will see it
 
     def test_asking_for_the_teacher_escalates_without_calling_the_model(
         self, api, session, student, auth, spy

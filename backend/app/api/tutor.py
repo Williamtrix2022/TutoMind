@@ -69,7 +69,15 @@ async def stream_tutor_chat(
             logger.exception("Embedding the question failed; answering without course material")
 
     course_url = moodle_course_url(settings, body.course_id)
-    turn = await run_in_threadpool(prepare_turn, session, user, body, query_vector, course_url)
+    turn = await run_in_threadpool(
+        prepare_turn,
+        session,
+        user,
+        body,
+        query_vector,
+        course_url,
+        getattr(llm, "relevance", None),
+    )
     return EventStreamResponse(
         stream_events(turn, llm, session_factory),
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},

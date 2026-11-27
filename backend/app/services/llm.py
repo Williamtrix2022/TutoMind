@@ -13,6 +13,7 @@ from google import genai
 from google.genai import types
 
 from app.core.config import Settings, get_settings
+from app.services.retrieval import Relevance
 
 # Gemini permite elegir la dimensión; con menos de 3072 hay que normalizar el vector.
 _EMBED_BATCH = 100
@@ -37,6 +38,14 @@ class GeminiClient:
                 raise RuntimeError("GEMINI_API_KEY no está configurada (ver backend/.env.example).")
             client = genai.Client(api_key=self._settings.gemini_api_key)
         self._client = client
+
+    @property
+    def relevance(self) -> Relevance:
+        """Cuándo un fragmento cuenta como «sobre la pregunta» con embeddings semánticos."""
+        return Relevance(
+            max_distance=self._settings.retrieval_max_distance,
+            margin=self._settings.retrieval_margin,
+        )
 
     async def embed(self, texts: Sequence[str], *, is_query: bool = False) -> list[list[float]]:
         """Un vector normalizado de `embedding_dimensions` por texto."""

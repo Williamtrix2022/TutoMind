@@ -1,6 +1,6 @@
 # 🧠 TutoMind — Tutor Inteligente & Analítica Predictiva XAI
 
-Plataforma web educativa (PWA) que combina **tutoría socrática con IA** (RAG sobre el material del curso) y un **dashboard de riesgo académico explicable (XAI)**, pensada para integrarse con Moodle.
+Plataforma web educativa (PWA) que combina **tutoría con IA** (RAG sobre el material del curso) y un **dashboard de riesgo académico explicable (XAI)**, pensada para integrarse con Moodle.
 
 ### 👉 Pruébalo ahora
 **https://tutomind.vercel.app**
@@ -21,10 +21,10 @@ La contraseña de las cuentas de demo se entrega en privado. Elige el rol en el 
 ## ✨ Qué hace
 
 ### 🎓 Para estudiantes
-* **Tutor socrático:** responde con el material que sube el docente, cita sus fuentes y guía paso a paso **sin dar la respuesta hecha**.
+* **Tutor explicativo y cercano:** responde con el material que sube el docente (y lo completa con su conocimiento si es breve) y cita sus fuentes. Cada respuesta tiene una validación breve, una explicación paso a paso, **un ejemplo práctico** y una pregunta para comprobar que se entendió.
 * **Tres niveles de explicación:** básico, intermedio y avanzado.
-* **Detección de frustración:** si el estudiante se atasca, el tutor baja el ritmo y ofrece ayuda humana.
-* **Ayuda del docente:** un botón registra una solicitud (ticket) que el docente puede atender.
+* **Detección de frustración:** si el estudiante se frustra, el tutor adapta el tono y baja el ritmo.
+* **El docente, como última instancia:** solo si el estudiante dice que sigue sin entender tras dos explicaciones, o su frustración persiste, el tutor le ofrece enviar la duda y la conversación al docente. **La solicitud se registra únicamente si el estudiante acepta**, y se refleja en el riesgo del curso.
 * **Formato académico:** Markdown, fórmulas LaTeX (KaTeX) y bloques de código con botón de copiar.
 
 ### 👩‍🏫 Para docentes
@@ -67,7 +67,7 @@ El contrato [`docs/openapi.json`](docs/openapi.json) es la **fuente única de ve
 
 * **El riesgo es un modelo de reglas ponderadas, no un modelo predictivo entrenado.** Es transparente y verificable (el puntaje es exactamente la suma de los factores), pero los pesos y umbrales son una primera calibración que debe ajustarse con datos reales.
 * **Moodle es simulado.** El cliente de Web Services está escrito y probado contra un Moodle simulado; **no se ha ejecutado contra un Moodle real**. Sin `MOODLE_BASE_URL` se usan datos de demostración y la aplicación lo avisa.
-* **El tutor depende de la clave de Gemini.** Sin clave funciona con un cliente offline (reglas y embeddings léxicos): sirve para probar el flujo, pero es menos capaz. El nivel gratuito de Google puede usar lo que se envíe para mejorar sus modelos: **usa solo material de demostración**.
+* **El tutor depende de la clave de Gemini.** Sin clave funciona con un cliente offline: no razona, pero presenta con formato limpio los fragmentos relevantes de tu material (con su fuente) y avisa cuando el curso no cubre la pregunta. Sirve para probar y demostrar el flujo, pero es menos capaz. El nivel gratuito de Google puede usar lo que se envíe para mejorar sus modelos: **usa solo material de demostración**.
 * **El tema de cada pregunta es el documento más cercano**, no el concepto. La alerta de confusión exige al menos 3 preguntas de varios estudiantes.
 * **Servidor gratuito:** se duerme sin uso (primera respuesta lenta) y no es para cargas reales.
 

@@ -16,7 +16,7 @@
 
 ## 1. Apertura (30 s)
 
-> «TutoMind hace dos cosas. A los **estudiantes** les da un tutor que los guía con el material de su curso **sin darles la respuesta hecha**. Y a los **docentes** les muestra **quién está en riesgo y por qué**, no solo un número.»
+> «TutoMind hace dos cosas. A los **estudiantes** les da un tutor que les explica con claridad, con el material de su curso, y **con ejemplos**. Y a los **docentes** les muestra **quién está en riesgo y por qué**, no solo un número.»
 
 ---
 
@@ -51,7 +51,7 @@
 **Tutor**
 1. Toca la pregunta sugerida **«No entiendo la regla de la cadena»**. La conversación abre y el tutor responde en **streaming**.
 2. Señala las **fuentes** al final: «Cita el documento del curso y la página. Responde con el material del profesor, no con cualquier cosa de internet.»
-3. Resalta el estilo: «Hace preguntas y da pistas; no resuelve el ejercicio por ella.»
+3. Resalta el estilo: «Valida la pregunta, explica paso a paso, da un ejemplo y pregunta si quedó claro.»
 4. Cambia el **nivel** a *Avanzado* y repite una pregunta para mostrar que cambia la profundidad (se nota más con Gemini; en modo offline el efecto es menor).
 5. **Frustración:** escribe «ya me rendí, no entiendo nada, esto es imposible». Aparece el aviso **«Este tema está costando, y es normal»** y el tutor baja el ritmo.
 6. Pulsa **Pedir ayuda al docente**: «Se registra una solicitud para el docente, con el contexto de la conversación.»

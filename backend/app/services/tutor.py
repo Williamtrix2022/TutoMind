@@ -31,7 +31,7 @@ from app.schemas import (
 )
 from app.services.frustration import Assessment, assess
 from app.services.llm import LLMClient
-from app.services.retrieval import RetrievedChunk, retrieve_chunks
+from app.services.retrieval import Relevance, RetrievedChunk, retrieve_chunks
 from app.services.tickets import open_ticket
 from app.services.topics import topic_for
 from app.services.tutor_prompt import (
@@ -45,7 +45,8 @@ logger = logging.getLogger(__name__)
 MAX_MESSAGES = 40
 MAX_MESSAGE_CHARS = 8000
 HUMAN_HELP_REPLY = (
-    "Listo, avisé a tu docente. Mientras tanto, puedo seguir contigo con un ejemplo más sencillo."
+    "Listo, le envié tu consulta y nuestra conversación a tu docente para que la revise en su "
+    "panel. Mientras tanto, si quieres, seguimos con otro ejemplo."
 )
 LLM_ERROR_MESSAGE = "No pude generar la respuesta. Inténtalo de nuevo."
 
@@ -102,12 +103,20 @@ def prepare_turn(
     body: TutorChatRequest,
     query_vector: list[float] | None,
     course_url: str | None = None,
+    relevance: Relevance | None = None,
 ) -> Turn:
     question = body.messages[-1].content
     conversation = _conversation_for(session, user, body)
     assessment = assess(body.messages, body.request_human_help)
     chunks = (
-        retrieve_chunks(session, body.course_id, query_vector, course_url=course_url)
+        retrieve_chunks(
+            session,
+            body.course_id,
+            query_vector,
+            course_url=course_url,
+            question=question,
+            relevance=relevance,
+        )
         if query_vector is not None
         else []
     )
@@ -122,8 +131,10 @@ def prepare_turn(
         )
     )
 
+    # Offering the teacher's help is not asking for it: the ticket exists only once the student
+    # confirms (the app then sends `request_human_help`). Until then the event is just a suggestion.
     ticket_id = None
-    if assessment.escalation_reason is not None:
+    if assessment.escalation_reason == "student_requested":
         ticket = open_ticket(
             session, body.course_id, user.id, conversation.id, assessment.escalation_reason
         )
@@ -210,7 +221,7 @@ async def stream_events(
             cited.setdefault(chunk.document_id, _citation(chunk))
         yield _frame(SourcesEvent(type="sources", sources=list(cited.values())))
 
-    reason: Literal["student_requested", "persistent_frustration"] | None
+    reason: Literal["student_requested", "persistent_frustration", "repeated_failure"] | None
     reason = turn.assessment.escalation_reason
     if reason is not None:
         signal = EscalationSignal(suggested=True, reason=reason, ticket_id=turn.ticket_id)
