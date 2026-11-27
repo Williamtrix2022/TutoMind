@@ -24,8 +24,8 @@ from sqlalchemy.orm import Session
 
 from app.db.models import Conversation, Message
 from app.schemas import TopicStat
-from app.services.embeddings import tokenize
 from app.services.frustration import DETECTION_THRESHOLD
+from app.services.lexical import vocabulary
 from app.services.retrieval import RetrievedChunk
 
 OTHER_TOPIC = "Otros temas"
@@ -37,7 +37,6 @@ FRUSTRATION_WEIGHT = 0.6
 REPEAT_WEIGHT = 0.4
 MAX_SAMPLES = 3
 SAMPLE_CHARS = 200
-_MIN_SHARED_WORD = 4  # ignore tiny words when deciding that a chunk "talks about" the question
 _FILE_EXTENSION = re.compile(r"\.(pdf|docx|pptx)$", re.IGNORECASE)
 
 
@@ -54,23 +53,10 @@ def _clean_title(title: str) -> str:
     return _FILE_EXTENSION.sub("", title).strip()[:120] or OTHER_TOPIC
 
 
-def _stem(word: str) -> str:
-    """Spanish plural to singular ("funciones" -> "funcion", "derivadas" -> "derivada")."""
-    if word.endswith("es") and len(word) > 5:
-        return word[:-2]
-    if word.endswith("s") and len(word) > 4:
-        return word[:-1]
-    return word
-
-
-def _vocabulary(text: str) -> set[str]:
-    return {_stem(t) for t in tokenize(text) if len(t) >= _MIN_SHARED_WORD}
-
-
 def topic_for(question: str, chunks: list[RetrievedChunk]) -> str:
-    asked = _vocabulary(question)
+    asked = vocabulary(question)
     for chunk in chunks:  # nearest first
-        if asked & _vocabulary(chunk.content):
+        if asked & vocabulary(chunk.content):
             return _clean_title(chunk.title)
     return OTHER_TOPIC
 

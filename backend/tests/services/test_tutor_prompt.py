@@ -34,14 +34,36 @@ class TestSystemPrompt:
             others = [g for other, g in LEVEL_GUIDANCE.items() if other != level]
             assert not any(g in text for g in others)
 
-    def test_socratic_method_and_no_full_solutions(self):
+    def test_it_is_a_warm_explanatory_tutor_with_a_four_part_answer(self):
         text = system()
 
-        assert "socrático" in text
-        assert "NO entregues la solución completa" in text
+        assert "amable, paciente y experto" in text
+        for part in (
+            "Validación breve",
+            "Explicación clara",
+            "Ejemplo práctico",
+            "Cierre de verificación",
+        ):
+            assert part in text
+        assert "socrático" not in text.lower()
 
-    def test_anti_plagiarism_rule(self):
-        assert "tarea, examen o ejercicio completo" in system()
+    def test_it_answers_instead_of_withholding_the_solution(self):
+        text = system()
+
+        assert "NO entregues la solución completa" not in text
+        assert "responder de forma clara, completa y didáctica" in text
+
+    def test_when_the_student_still_does_not_understand_it_explains_differently(self):
+        assert "no repitas lo mismo" in system()
+
+    def test_the_teacher_is_not_offered_by_the_model_on_its_own(self):
+        assert "No mandes al estudiante con su docente por tu cuenta" in system()
+
+    def test_it_may_complete_short_material_with_its_own_knowledge_but_says_so(self):
+        text = system()
+
+        assert "complétalo con tu propio conocimiento" in text
+        assert "Nunca inventes fuentes" in text
 
     def test_material_is_included_with_its_source_and_page(self):
         text = system(chunks=[chunk(1), chunk(2, title="Sílabo", page=None, content="Unidad 2")])
@@ -76,6 +98,12 @@ class TestSystemPrompt:
     def test_solution_requests_add_an_explicit_guard(self):
         assert SOLUTION_GUARD_MARKER in system(solution_requested=True)
         assert SOLUTION_GUARD_MARKER not in system(solution_requested=False)
+
+    def test_the_guard_only_withholds_graded_work_ready_to_copy(self):
+        text = system(solution_requested=True)
+
+        assert "No entregues el trabajo listo para copiar" in text
+        assert "resuelve un ejemplo análogo" in text
 
     def test_unknown_level_is_rejected(self):
         with pytest.raises(KeyError):
