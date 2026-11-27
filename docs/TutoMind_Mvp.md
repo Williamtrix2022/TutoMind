@@ -266,7 +266,7 @@ Con el backend encendido, entra con los usuarios demo de arriba.
 Más reciente primero.
 
 ### 2026-11-27
-- Tutor explicativo y cercano en lugar de socrático; modo offline que presenta el material con formato limpio; filtro de relevancia del material (no mezcla materias); el docente se ofrece solo como última instancia y el ticket se crea al confirmar — PR_TUTOR.
+- Tutor explicativo y cercano en lugar de socrático; modo offline que presenta el material con formato limpio; filtro de relevancia del material (no mezcla materias); el docente se ofrece solo como última instancia y el ticket se crea al confirmar — [#67](https://github.com/Williamtrix2022/TutoMind/pull/67).
 
 ### 2026-11-26
 - README final, [guion de la demostración](GUION_DEMO.md) y diapositivas (10 láminas; el enlace es privado hasta que se comparta desde su menú *Share*) (#28) — [#65](https://github.com/Williamtrix2022/TutoMind/pull/65).
