@@ -37,14 +37,15 @@ TutoMind es una plataforma web educativa (PWA) integrada con **Moodle** que ofre
 
 ## 2. Estado actual
 
-**Progreso global: 26 de 29 tareas (90 %)**
+**Progreso global: 27 de 29 tareas (93 %)**
 
-`██████████████████░░` 90 %
+`███████████████████░` 93 %
 
 | Área | Estado | Detalle |
 |---|---|---|
 | **Contrato** (`docs/openapi.json`) | ✅ Listo | Los 5 endpoints definidos, más el `GET` de documentos ([#38](https://github.com/Williamtrix2022/TutoMind/pull/38)). Cambios solo por PR del contrato. |
 | **Frontend** | ✅ Sprint 2 completo | Todas las pantallas (login, tutor, documentos, riesgo, temas e inicios por rol) con carga, vacío y error, y reintentos solo ante fallos de red o 5xx. Habla con el backend real por defecto (`NEXT_PUBLIC_USE_MOCKS=false`). Pruebas end-to-end con Playwright contra el backend real y auditoría de accesibilidad (axe) en 7 pantallas, 2 temas y móvil/escritorio, sin violaciones graves. |
+| **Despliegue** | ✅ En línea | Frontend en https://tutomind.vercel.app, backend en https://tutomind-api.onrender.com y base en Neon (todo gratis). Detalle en [`docs/DESPLIEGUE.md`](DESPLIEGUE.md). Las pruebas end-to-end pasan contra la URL pública. |
 | **Backend** | ✅ Completo | Sprint 1 y Sprint 2 del backend completos (#12–#24): auth, documentos, tutor con RAG/SSE, frustración y tickets, riesgo con XAI, termómetro del aula y Moodle. Todos los endpoints del contrato están implementados. Funciona sin API key y sin Moodle (clientes offline/simulado); el cliente de Moodle real **no está probado contra un Moodle real** y Gemini real tampoco. |
 
 > Todo el flujo (login, documentos, tutor, riesgo y temas) se probó con la interfaz contra el backend real: `cd frontend && npm run e2e` (ver sección 8). Lighthouse sobre la compilación de producción: accesibilidad, buenas prácticas y SEO en 100; rendimiento 100 en escritorio y 70 en móvil (hidratación de React con la CPU simulada 4× más lenta).
@@ -68,7 +69,7 @@ TutoMind es una plataforma web educativa (PWA) integrada con **Moodle** que ofre
 | **Sprint 0** | hasta 24 nov | Fase 0 · Fundaciones | Contrato, esqueleto backend, Git y App Shell | ✅ 4 / 4 |
 | **Sprint 1** | 25 – 27 nov | Fase 1 · Núcleo | Auth, documentos, RAG y chat del tutor | ✅ 14 / 14 |
 | **Sprint 2** | 28 – 29 nov | Fase 2 · Analítica | Riesgo con XAI, temas, integración completa | ✅ 6 / 6 |
-| **Entrega** | 30 nov | Fase 3 · Pulido | QA, despliegue, documentación y demo | 🔄 2 / 5 |
+| **Entrega** | 30 nov | Fase 3 · Pulido | QA, despliegue, documentación y demo | 🔄 3 / 5 |
 
 ---
 
@@ -119,7 +120,7 @@ TutoMind es una plataforma web educativa (PWA) integrada con **Moodle** que ofre
 |---|---|---|---|---|---|
 | [#25](https://github.com/Williamtrix2022/TutoMind/issues/25) | Pruebas end-to-end del flujo completo | Ambos | @Williamtrix2022 | ✅ | [#61](https://github.com/Williamtrix2022/TutoMind/pull/61) |
 | [#26](https://github.com/Williamtrix2022/TutoMind/issues/26) | Auditoría PWA, accesibilidad y rendimiento | Frontend | @Williamtrix2022 | ✅ | [#61](https://github.com/Williamtrix2022/TutoMind/pull/61) |
-| [#27](https://github.com/Williamtrix2022/TutoMind/issues/27) | Despliegue de frontend y backend | DevOps | @Jhon-Quiceno | ⬜ | — |
+| [#27](https://github.com/Williamtrix2022/TutoMind/issues/27) | Despliegue de frontend y backend | DevOps | @Williamtrix2022 | ✅ | [#64](https://github.com/Williamtrix2022/TutoMind/pull/64) |
 | [#28](https://github.com/Williamtrix2022/TutoMind/issues/28) | README final, guion de demo y presentación | Docs | @Williamtrix2022 | ⬜ | — |
 | [#29](https://github.com/Williamtrix2022/TutoMind/issues/29) | Merge `develop` → `main` y etiqueta `v0.1.0` | Release | @Williamtrix2022 | ⬜ | — |
 
@@ -251,6 +252,7 @@ Con el backend encendido, entra con los usuarios demo de arriba.
 | Backend sin arrancar con la entrega en 5 días | Alto | Empezar por #12 → #15 hoy; el frontend avanza con mocks. |
 | RAG y streaming (#17) es la tarea más pesada | Alto | Entregar primero una versión mínima (recuperación + respuesta) y refinar después. |
 | Moodle real puede no estar disponible | Medio | Plan B: datos simulados documentados (#24). |
+| Render gratis duerme el servidor tras ~15 min sin uso | Medio | La primera petición tarda hasta un minuto. El login lo despierta al abrirse y avisa; abrir la pantalla un par de minutos antes de la demostración. |
 | La clave de Gemini devuelve 403 «free tier not available for this project» | Medio | Crear la clave en https://aistudio.google.com/apikey con un proyecto nuevo creado desde AI Studio, o dejar `GEMINI_API_KEY` vacío para usar el cliente offline. El tutor real queda sin probar hasta entonces. |
 | Integración tarde (Sprint 2) | Medio | Contrato estable y matriz de integración revisada a diario. |
 
@@ -261,6 +263,7 @@ Con el backend encendido, entra con los usuarios demo de arriba.
 Más reciente primero.
 
 ### 2026-11-26
+- Despliegue gratuito publicado (#27): Vercel + Render + Neon; las pruebas end-to-end pasan contra la URL pública. Al desplegar se encontró y corrigió que `httpx` faltaba en las dependencias de producción — [#64](https://github.com/Williamtrix2022/TutoMind/pull/64).
 - Preparación del despliegue gratuito (#27): `render.yaml`, guía [`docs/DESPLIEGUE.md`](DESPLIEGUE.md), URL de base de datos con cualquier esquema, contraseña de demo por `DEMO_PASSWORD`, aviso de arranque en frío en el login y PDF de ejemplo del curso en `docs/demo/` — [#62](https://github.com/Williamtrix2022/TutoMind/pull/62).
 - Pruebas end-to-end con Playwright contra el backend real, auditoría de accesibilidad con axe (contraste y nombres accesibles corregidos), Lighthouse y nuevos iconos de la PWA (#25, #26) — [#61](https://github.com/Williamtrix2022/TutoMind/pull/61).
 - Backend: integración con Moodle (cliente de Web Services, ingesta idempotente de eventos, enlaces en las citas y datos simulados documentados) (#24) — [#60](https://github.com/Williamtrix2022/TutoMind/pull/60).
