@@ -70,7 +70,7 @@ interface StatusStyle {
 /** El color nunca es la única señal: cada estado lleva etiqueta e ícono. */
 export const STATUS_STYLE: Record<DocumentStatus, StatusStyle> = {
   queued: { label: "En cola", icon: Clock, spin: false, badge: "bg-fg/10 text-muted" },
-  processing: { label: "Procesando", icon: LoaderCircle, spin: true, badge: "bg-primary/20 text-primary" },
-  indexed: { label: "Indexado", icon: CircleCheck, spin: false, badge: "bg-success/20 text-success" },
-  failed: { label: "Falló", icon: CircleAlert, spin: false, badge: "bg-danger/20 text-danger" },
+  processing: { label: "Procesando", icon: LoaderCircle, spin: true, badge: "bg-primary/20 text-ink-primary" },
+  indexed: { label: "Indexado", icon: CircleCheck, spin: false, badge: "bg-success/20 text-ink-success" },
+  failed: { label: "Falló", icon: CircleAlert, spin: false, badge: "bg-danger/20 text-ink-danger" },
 };

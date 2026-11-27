@@ -23,7 +23,7 @@ import { firstName, useGreeting } from "./greeting";
 function Tile({ href, title, className = "", children }: { href: string; title: string; className?: string; children: ReactNode }) {
   return (
     <motion.div whileTap={tap} whileHover={{ y: -3 }} transition={spring} className={className}>
-      <Link href={href} className="group block h-full rounded-3xl" aria-label={`${title}: ver detalle`}>
+      <Link href={href} className="group block h-full rounded-3xl">
         <Card className="relative flex h-full flex-col gap-5 transition-colors group-hover:border-primary/60">
           <div className="flex items-start justify-between gap-3">
             <h2 className="text-lg">{title}</h2>
@@ -251,7 +251,7 @@ function DocumentsTile() {
               {indexed} listos
             </li>
             {pending > 0 && (
-              <li className="inline-flex items-center gap-1.5 rounded-full bg-primary/20 px-2.5 py-1 text-primary">
+              <li className="inline-flex items-center gap-1.5 rounded-full bg-primary/20 px-2.5 py-1 text-ink-primary">
                 <FileClock className="size-3.5 motion-safe:animate-pulse" aria-hidden />
                 {pending} indexando
               </li>
@@ -278,7 +278,7 @@ export function TeacherHome() {
   return (
     <div className="space-y-6">
       <header className="space-y-3">
-        <p className="inline-flex rounded-full bg-primary/15 px-3 py-1 text-sm font-semibold text-primary">
+        <p className="inline-flex rounded-full bg-primary/15 px-3 py-1 text-sm font-semibold text-ink-primary">
           {greeting}
           {who && `, ${who}`}
         </p>

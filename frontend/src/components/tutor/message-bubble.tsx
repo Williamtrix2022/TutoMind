@@ -84,7 +84,7 @@ export function MessageBubble({ message, calm = false }: { message: ChatMessage;
           {message.content ? <Markdown content={message.content} /> : message.streaming ? <Thinking /> : null}
 
           {message.error && (
-            <p role="alert" className="mt-3 flex items-start gap-2 text-sm text-danger">
+            <p role="alert" className="mt-3 flex items-start gap-2 text-sm text-ink-danger">
               <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
               {message.error}
             </p>
