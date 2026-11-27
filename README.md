@@ -1,107 +1,124 @@
 # 🧠 TutoMind — Tutor Inteligente & Analítica Predictiva XAI
 
-Plataforma web educativa (PWA) integrada con **Moodle** que combina tutoría personalizada mediante IA generativa (RAG sobre material docente) con detección temprana y explicable de riesgo académico.
+Plataforma web educativa (PWA) que combina **tutoría socrática con IA** (RAG sobre el material del curso) y un **dashboard de riesgo académico explicable (XAI)**, pensada para integrarse con Moodle.
 
-**Entrega: 30 de noviembre de 2026** · [📋 Estado del MVP](docs/TutoMind_Mvp.md) · [Issues](../../issues) · [Milestones (sprints)](../../milestones) · [Contrato de API](docs/openapi.json)
+### 👉 Pruébalo ahora
+**https://tutomind.vercel.app**
 
----
+| Rol | Correo | Qué ve |
+|---|---|---|
+| Docente | `docente@tutomind.demo` | Riesgo por estudiante con factores XAI, termómetro del aula y documentos |
+| Estudiante | `ana@tutomind.demo` | Tutor con streaming, ayuda del docente y bloque de estudio |
 
-## ✨ Características Principales (MVP)
+La contraseña de las cuentas de demo se entrega en privado. Elige el rol en el selector de la pantalla de login.
 
-### 🎓 Para Estudiantes
-* **Tutor Socrático y Evaluador:** Genera ejercicios prácticos basados en el sílabo y documentos del curso, evalúa respuestas y guía paso a paso sin regalar soluciones completas.
-* **Adaptación Cognitiva y Emocional:** Ajusta la profundidad según nivel (Básico, Intermedio, Avanzado), detecta frustración para adaptar el tono y señala lagunas de conocimiento recurrentes.
-* **Soporte Técnico Completo:** Renderizado nativo de fórmulas matemáticas (**LaTeX/KaTeX**), bloques de código con resaltado de sintaxis y enlaces directos a recursos de Moodle.
-* **Escalamiento Humano:** Opción directa para solicitar apoyo del docente cuando una duda persiste.
+> **La primera vez puede tardar hasta un minuto:** el servidor gratuito se duerme tras 15 minutos sin uso y la pantalla de login lo despierta al abrirse. Si ves «El servidor está despertando», espera.
 
-### 👩‍🏫 Para Docentes
-* **Gestión de Conocimiento por Asignatura:** Carga de archivos PDF, DOCX, PPTX y guías que alimentan la base vectorial del curso.
-* **Dashboard Predictivo con Explicabilidad (XAI):** Vista de semáforo (**Verde / Amarillo / Rojo**) actualizada por eventos en Moodle, detallando los factores exactos de cada alerta.
-* **Termómetro del Aula:** Reporte automático de los temas más consultados y alertas tempranas de confusión grupal.
+📋 [Estado del MVP](docs/TutoMind_Mvp.md) · 🎬 [Guion de la demo](docs/GUION_DEMO.md) · 🚀 [Despliegue](docs/DESPLIEGUE.md) · 📑 [Contrato de API](docs/openapi.json)
 
 ---
 
-## 🏗️ Arquitectura del Proyecto
+## ✨ Qué hace
+
+### 🎓 Para estudiantes
+* **Tutor socrático:** responde con el material que sube el docente, cita sus fuentes y guía paso a paso **sin dar la respuesta hecha**.
+* **Tres niveles de explicación:** básico, intermedio y avanzado.
+* **Detección de frustración:** si el estudiante se atasca, el tutor baja el ritmo y ofrece ayuda humana.
+* **Ayuda del docente:** un botón registra una solicitud (ticket) que el docente puede atender.
+* **Formato académico:** Markdown, fórmulas LaTeX (KaTeX) y bloques de código con botón de copiar.
+
+### 👩‍🏫 Para docentes
+* **Documentos del curso:** sube PDF, DOCX o PPTX (hasta 20 MB); se indexan en una base vectorial.
+* **Semáforo de riesgo con XAI:** verde, amarillo y rojo por estudiante, con **los factores exactos** que explican cada nivel (cuánto aporta cada uno) y la nota proyectada.
+* **Termómetro del aula:** temas más consultados y alertas de confusión grupal, con preguntas de ejemplo.
+
+---
+
+## 🏗️ Arquitectura
+
+```text
+Navegador (PWA) ──► Vercel: Next.js 15 ──► Render: FastAPI ──► Neon: PostgreSQL + pgvector
+                                                │
+                                                ├─► Google Gemini (tutor y embeddings, nivel gratuito)
+                                                └─► Moodle (Web Services; hoy datos simulados)
+```
 
 ```text
 tutomind/
-├── frontend/          # Next.js 15 + TypeScript + Tailwind + Motion (PWA)
-├── backend/           # FastAPI + Python 3.12 + pgvector + Gemini (gratis)
-├── docs/              # Contrato OpenAPI, estado del MVP (TutoMind_Mvp.md) y diagramas
-├── .github/           # Plantillas de issues y pull requests
-├── CLAUDE.md          # Reglas de arquitectura y diseño para Claude Code
-├── CONTRIBUTING.md    # Flujo de trabajo del equipo
-└── README.md
+├── frontend/   Next.js 15 · TypeScript estricto · Tailwind · Motion · TanStack Query · Playwright
+├── backend/    FastAPI · Python 3.12 · Pydantic v2 · SQLAlchemy · Alembic · pgvector
+├── docs/       Contrato OpenAPI, estado del MVP, guion de demo, despliegue y PDF de ejemplo
+└── .github/    Plantillas de issues y pull requests
 ```
 
-El contrato [`docs/openapi.json`](docs/openapi.json) es la **fuente única de verdad** entre Frontend y Backend. Cualquier cambio de endpoint se hace ahí primero, en un PR revisado por ambos.
+El contrato [`docs/openapi.json`](docs/openapi.json) es la **fuente única de verdad** entre frontend y backend: el frontend genera sus tipos con `npm run gen:api` y el backend valida con modelos Pydantic alineados al mismo archivo (hay un test que los compara).
 
 | Endpoint | Descripción |
 |---|---|
-| `POST /api/v1/auth/login` | Login con rol `student` o `teacher` |
-| `POST /api/v1/courses/{course_id}/documents` | Subida de PDF/DOCX/PPTX |
-| `POST /api/v1/tutor/chat/stream` | Chat del tutor por SSE (LaTeX, código, frustración, escalamiento) |
+| `POST /api/v1/auth/login` | Login con rol `student` o `teacher` (JWT) |
+| `GET/POST /api/v1/courses/{course_id}/documents` | Lista y subida de PDF/DOCX/PPTX |
+| `POST /api/v1/tutor/chat/stream` | Chat del tutor por SSE (fuentes, frustración, escalamiento) |
 | `GET /api/v1/analytics/courses/{course_id}/risk` | Semáforo de riesgo con factores XAI |
 | `GET /api/v1/analytics/courses/{course_id}/topics` | Temas más consultados y alertas de confusión |
 
 ---
 
-## 🚀 Puesta en marcha
+## ⚖️ Qué es y qué no es (límites honestos)
 
-### Frontend
-```bash
-cd frontend
-npm install
-npm run dev        # http://localhost:3000
-```
-
-### Backend
-Ver [`backend/README_BACKEND.md`](backend/README_BACKEND.md).
+* **El riesgo es un modelo de reglas ponderadas, no un modelo predictivo entrenado.** Es transparente y verificable (el puntaje es exactamente la suma de los factores), pero los pesos y umbrales son una primera calibración que debe ajustarse con datos reales.
+* **Moodle es simulado.** El cliente de Web Services está escrito y probado contra un Moodle simulado; **no se ha ejecutado contra un Moodle real**. Sin `MOODLE_BASE_URL` se usan datos de demostración y la aplicación lo avisa.
+* **El tutor depende de la clave de Gemini.** Sin clave funciona con un cliente offline (reglas y embeddings léxicos): sirve para probar el flujo, pero es menos capaz. El nivel gratuito de Google puede usar lo que se envíe para mejorar sus modelos: **usa solo material de demostración**.
+* **El tema de cada pregunta es el documento más cercano**, no el concepto. La alerta de confusión exige al menos 3 preguntas de varios estudiantes.
+* **Servidor gratuito:** se duerme sin uso (primera respuesta lenta) y no es para cargas reales.
 
 ---
 
-## 👥 Equipo y responsabilidades
+## 🚀 Ejecutarlo en tu máquina
+
+Necesitas Node 20+, Python 3.12 y Docker.
+
+```bash
+# 1. Base de datos (PostgreSQL + pgvector)
+cd backend
+cp .env.example .env            # opcional: GEMINI_API_KEY (sin clave usa el cliente offline)
+docker compose up -d db         # si el 5432 está ocupado: POSTGRES_PORT=5433 y el mismo puerto en DATABASE_URL
+pip install -r requirements.txt
+alembic upgrade head && python -m app.db.seed
+
+# 2. Backend  →  http://localhost:8000/docs
+uvicorn app.main:app --reload
+
+# 3. Frontend  →  http://localhost:3000   (en otra terminal)
+cd frontend
+cp .env.example .env.local      # NEXT_PUBLIC_API_URL=http://localhost:8000
+npm install && npm run dev
+```
+
+Usuarios de desarrollo (los crea el seed): `docente@tutomind.demo` y `ana@tutomind.demo`, contraseña `demo12345`. Sin backend, `NEXT_PUBLIC_USE_MOCKS=true` usa respuestas simuladas.
+
+### Pruebas
+```bash
+cd backend && pytest             # ~420 tests (los de base de datos usan TEST_DATABASE_URL)
+cd frontend && npm run e2e       # Playwright contra el backend real + accesibilidad (axe)
+```
+Detalles, Lighthouse y cómo recrear los iconos en [`docs/TutoMind_Mvp.md`](docs/TutoMind_Mvp.md#8-cómo-ejecutar-y-probar).
+
+**Calidad medida:** Lighthouse (producción) en accesibilidad, buenas prácticas y SEO: 100; rendimiento: 100 en escritorio y 70 en móvil. Auditoría axe WCAG 2.1 AA sin violaciones graves en 7 pantallas, 2 temas y móvil/escritorio.
+
+---
+
+## 👥 Equipo
 
 | Área | Carpeta | Responsable |
 |---|---|---|
-| Frontend (UI, PWA, integración) | `/frontend` | @Williamtrix2022 |
-| Backend (API, RAG, riesgo XAI, Moodle) | `/backend` | _Compañero de equipo_ |
+| Frontend, QA, despliegue y documentación | `/frontend`, `/docs` | @Williamtrix2022 |
+| Backend (API, RAG, riesgo XAI, Moodle) | `/backend` | @Jhon-Quiceno |
 | Contrato de API | `/docs/openapi.json` | Ambos (revisión cruzada) |
 
----
-
-## 🗓️ Plan de trabajo: fases y sprints
-
-Cada sprint es un [milestone](../../milestones) de GitHub y cada fase una etiqueta `fase:*`.
-
-| Sprint | Fechas | Fase | Objetivo |
-|---|---|---|---|
-| **Sprint 0** ✅ | hasta 24 nov | Fase 0 · Fundaciones | Contrato OpenAPI, esqueleto backend, Git y App Shell |
-| **Sprint 1** | 25 – 27 nov | Fase 1 · Núcleo | Auth, documentos, RAG y chat del tutor con streaming |
-| **Sprint 2** | 28 – 29 nov | Fase 2 · Analítica | Riesgo con XAI, termómetro del aula, integración completa |
-| **Entrega** | 30 nov | Fase 3 · Pulido | QA, despliegue, documentación y demo |
-
-Para trabajar en paralelo: el frontend usa **mocks (MSW)** basados en el contrato mientras el backend no está listo, y se integra en el Sprint 2.
-
-### Etiquetas
-- **Fase:** `fase:0-fundaciones` · `fase:1-nucleo` · `fase:2-analitica` · `fase:3-entrega`
-- **Área:** `area:frontend` · `area:backend` · `area:contrato` · `area:devops`
-- **Prioridad:** `prioridad:alta` · `prioridad:media` · `prioridad:baja`
-- `bloqueado` cuando una tarea depende de otra.
-
----
-
-## 🤝 Cómo colaborar
-
-Lee [`CONTRIBUTING.md`](CONTRIBUTING.md). Resumen:
-
-1. Toma una issue de tu área y del sprint actual.
-2. Crea una rama desde `develop`: `feat/fe-…`, `feat/be-…`, `fix/…`, `docs/…`.
-3. Abre un PR hacia `develop` con `Closes #N`; la otra persona revisa.
-4. `main` solo recibe `develop` al cerrar un sprint (y en la entrega).
+Flujo de trabajo en [`CONTRIBUTING.md`](CONTRIBUTING.md): ramas `feat/…` desde `develop`, PR con `Closes #N` y revisión cruzada; `main` solo recibe `develop` al cerrar un sprint.
 
 ---
 
 ## 🎨 Diseño
 
-Estética Apple HIG + Silent Moon: tarjetas Bento `rounded-3xl`, modo noche (`#03174C`) y día (`#F6F7FB`), acentos `#8E97FD`, `#6CB28E`, `#F4B63F`, `#FA6E5A`, `#FFCF86`, `#D9A5B3`. Detalles en [`CLAUDE.md`](CLAUDE.md).
+Estética Apple HIG + Silent Moon: tarjetas Bento `rounded-3xl`, modo noche (`#03174C`) y día (`#F6F7FB`), acento `#8E97FD`, semáforo verde `#6CB28E`, amarillo `#F4B63F` y rojo `#E5484D`, alerta de confusión `#FFCF86` y brillo de IA `#D9A5B3`. Movimiento con resortes, feedback táctil en cada botón y respeto por `prefers-reduced-motion`. Reglas completas en [`CLAUDE.md`](CLAUDE.md).
