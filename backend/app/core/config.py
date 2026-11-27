@@ -24,7 +24,9 @@ class Settings(BaseSettings):
 
     # IA gratuita (Google AI Studio). La clave se crea en https://aistudio.google.com/apikey
     gemini_api_key: str = ""
-    llm_model: str = "gemini-2.5-flash"
+    # gemini-2.5-flash ya no se ofrece a cuentas nuevas, y los "flash" normales piensan antes de
+    # responder (24 s o más hasta el primer texto). El lite responde en ~1 s.
+    llm_model: str = "gemini-3.5-flash-lite"
     embedding_model: str = "gemini-embedding-001"
     # Relevancia del material con embeddings semánticos de Gemini (distancia coseno: 0 = idéntico).
     # Primera calibración: un fragmento más lejano que esto, o mucho más lejano que el mejor,
