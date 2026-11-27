@@ -53,8 +53,8 @@
 2. Señala las **fuentes** al final: «Cita el documento del curso y la página. Responde con el material del profesor, no con cualquier cosa de internet.»
 3. Resalta el estilo: «Valida la pregunta, explica paso a paso, da un ejemplo y pregunta si quedó claro.»
 4. Cambia el **nivel** a *Avanzado* y repite una pregunta para mostrar que cambia la profundidad (se nota más con Gemini; en modo offline el efecto es menor).
-5. **Frustración:** escribe «ya me rendí, no entiendo nada, esto es imposible». Aparece el aviso **«Este tema está costando, y es normal»** y el tutor baja el ritmo.
-6. Pulsa **Pedir ayuda al docente**: «Se registra una solicitud para el docente, con el contexto de la conversación.»
+5. **Frustración y el docente como última instancia:** escribe «no entiendo nada, me rindo». El tutor **suaviza el tono** («Te entiendo, a veces cuesta…») pero todavía no ofrece al docente. Escribe una segunda vez «sigo sin entender, esto es imposible, me rindo»: ahora aparece la tarjeta **«Este tema se está complicando, y no pasa nada»** con la pregunta «¿Quieres que le envíe esta consulta y nuestro historial al profesor para que lo revise en su panel?».
+6. Pulsa **Sí, enviarla al profesor**: «Solo ahora se registra la solicitud, con la conversación, y el docente la ve reflejada en el riesgo del curso.» (También puedes decir **Ahora no** para mostrar que nada se envía sin permiso.)
 
 ---
 
@@ -74,7 +74,7 @@
 | Problema | Qué hacer |
 |---|---|
 | «El servidor está despertando…» | Espera hasta un minuto y conversa sobre el problema mientras carga. No recargues. |
-| El tutor responde con frases genéricas o cortas | Está en modo offline (sin Gemini o sin cuota). Explica: «Sin clave usa un modo de reglas; con Gemini el contenido es más rico.» El flujo, las fuentes y la frustración funcionan igual. |
+| El tutor responde solo con fragmentos del material | Está en modo offline (sin Gemini o sin cuota). Explica: «Sin clave presenta con formato limpio lo que dice el material; con Gemini explica con sus palabras y da ejemplos propios.» El flujo, las fuentes y la frustración funcionan igual. |
 | No entra / dice credenciales incorrectas | Revisa que el rol del selector coincida con la cuenta (Docente o Estudiante). |
 | Sin internet | Lee las capturas de las diapositivas; la arquitectura y los resultados de las pruebas se explican sin la app. |
 | Un documento queda en *Procesando* | Espera unos segundos; si pasa a *Falló*, sube otro PDF. |

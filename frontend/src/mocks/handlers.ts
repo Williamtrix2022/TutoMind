@@ -19,6 +19,8 @@ function sseStream(request: Request, body: TutorChatRequest): ReadableStream<Uin
   const lastUserMessage = [...body.messages].reverse().find((m) => m.role === "user")?.content ?? "";
   const wantsHuman = body.request_human_help === true;
   const frustrated = !wantsHuman && FRUSTRATION_PATTERN.test(lastUserMessage);
+  const frustratedMessages = body.messages.filter((m) => m.role === "user" && FRUSTRATION_PATTERN.test(m.content)).length;
+  const persistent = frustrated && frustratedMessages >= 2;
   const reply = wantsHuman ? MOCK_HELP_REPLY : MOCK_TUTOR_REPLY;
 
   return new ReadableStream<Uint8Array>({
@@ -53,7 +55,7 @@ function sseStream(request: Request, body: TutorChatRequest): ReadableStream<Uin
         });
       }
 
-      if (wantsHuman || frustrated) {
+      if (wantsHuman || persistent) {
         send({
           type: "escalation",
           escalation: {
