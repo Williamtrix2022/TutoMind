@@ -2,7 +2,7 @@ import asyncio
 
 from app.core.config import Settings
 from app.services.llm import GeminiClient, get_llm_client
-from app.services.offline_llm import OfflineLLMClient
+from app.services.offline_llm import ASK_WHAT_PART, EMPATHETIC_OPENERS, OfflineLLMClient
 from app.services.retrieval import RetrievedChunk
 from app.services.tutor_prompt import QUESTION_MARKER, build_system_prompt
 
@@ -100,9 +100,21 @@ def test_offline_tutor_asks_what_part_is_hard_instead_of_searching_when_frustrat
         asyncio.run(collect(client, question("no entiendo nada"), material(empathetic=True)))
     )
 
-    assert "Te entiendo" in text
-    assert "qué parte exacta se te complica" in text
+    assert any(opener in text for opener in EMPATHETIC_OPENERS)
+    assert any(ask in text for ask in ASK_WHAT_PART)
     assert "no encontré nada" not in text
+
+
+def test_offline_tutor_does_not_repeat_itself_when_the_student_stays_frustrated():
+    client = OfflineLLMClient(settings())
+    system = material(empathetic=True)
+    replies: list[str] = []
+    for text in ("no entiendo nada", "sigo sin entender", "me rindo"):
+        history = "".join(f"Estudiante: x\nTutor: {reply}\n" for reply in replies)
+        prompt = f"Conversación previa:\n{history}\n{QUESTION_MARKER}\n{text}"
+        replies.append("".join(asyncio.run(collect(client, prompt, system))))
+
+    assert len(set(replies)) == 3
 
 
 def test_offline_tutor_varies_its_opening_by_question_but_is_deterministic():
@@ -189,7 +201,8 @@ def test_offline_tutor_is_gentler_when_the_tone_must_adapt():
     plain = "".join(asyncio.run(collect(client, question("hola"), material(GUIDE))))
     soft = "".join(asyncio.run(collect(client, question("hola"), material(GUIDE, empathetic=True))))
 
-    assert "Te entiendo" in soft and "Te entiendo" not in plain
+    assert any(opener in soft for opener in EMPATHETIC_OPENERS)
+    assert not any(opener in plain for opener in EMPATHETIC_OPENERS)
 
 
 def test_offline_tutor_explains_instead_of_doing_the_work_when_asked_to():

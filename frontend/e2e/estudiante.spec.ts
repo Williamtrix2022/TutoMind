@@ -29,7 +29,7 @@ test.describe("Estudiante", () => {
     // Una sola frase frustrada solo suaviza el tono: todavía no se ofrece el docente.
     await box.fill("no entiendo nada, me rindo");
     await page.keyboard.press("Enter");
-    await expect(log).toContainText("Te entiendo", { timeout: 30_000 });
+    await expect(log).toContainText(/Te entiendo|Es normal que esto cueste|Tranquilo/, { timeout: 30_000 });
     await expect(offer).toHaveCount(0);
 
     // Si la frustración persiste, el tutor ofrece enviar la duda y la conversación al docente.

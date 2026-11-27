@@ -44,7 +44,11 @@ _OPENERS = (
     "¡Claro que sí, vamos a verlo!",
     "Vas por muy buen camino.",
 )
-_EMPATHETIC_OPENER = "Te entiendo, a veces cuesta: vamos con calma y por partes."
+EMPATHETIC_OPENERS = (
+    "Te entiendo, a veces cuesta: vamos con calma y por partes.",
+    "Es normal que esto cueste; lo vemos con calma, paso a paso.",
+    "Tranquilo, a todos nos pasa: lo repasamos desde otro ángulo.",
+)
 _SOLUTION_NOTE = (
     "Te explico el concepto y un ejemplo para que puedas resolver tu ejercicio con confianza."
 )
@@ -53,9 +57,13 @@ _NOT_FOUND = (
     "inventarte una explicación. Prueba a reformular la pregunta con el nombre del tema "
     "(por ejemplo, «regla de la cadena»)."
 )
-_ASK_WHAT_PART = (
+ASK_WHAT_PART = (
     "Cuéntame qué parte exacta se te complica (un paso, un concepto o un ejercicio) y la "
-    "revisamos con calma, explicada de otra forma."
+    "revisamos con calma, explicada de otra forma.",
+    "¿Qué parte exacta se te complica? Dime si es un paso, un concepto o un ejercicio y lo "
+    "vemos de otra manera.",
+    "Dime en qué punto te pierdes (un paso, un concepto o un ejercicio) y lo repasamos juntos, "
+    "con otra explicación.",
 )
 _CLOSING = "¿Te queda claro{example} o quieres que revisemos otra parte?"
 
@@ -65,6 +73,12 @@ class _Source:
     title: str
     page: int | None
     content: str
+
+
+def _next_variant(variants: tuple[str, ...], history: str) -> str:
+    """The first wording not used yet in this conversation, so the tutor never repeats itself."""
+    used = sum(variant in history for variant in variants)
+    return variants[used % len(variants)]
 
 
 def _sources(system: str) -> list[_Source]:
@@ -208,16 +222,18 @@ class OfflineLLMClient:
         return self._embedder.embed(list(texts))
 
     def _reply(self, prompt: str, system: str) -> str:
-        question = prompt.split(QUESTION_MARKER, 1)[-1].strip()
+        history, _, question = prompt.partition(QUESTION_MARKER)
+        question = question.strip()
+        empathetic = EMPATHY_MARKER in system
         opener = (
-            _EMPATHETIC_OPENER
-            if EMPATHY_MARKER in system
+            _next_variant(EMPATHETIC_OPENERS, history)
+            if empathetic
             else _OPENERS[zlib.crc32(question.encode()) % len(_OPENERS)]
         )
         groups = _by_document(_sources(system))[:MAX_SOURCES_SHOWN]
         if not groups:
             # A frustrated message is about how the student feels, not a subject to look up.
-            return f"{opener} {_ASK_WHAT_PART if EMPATHY_MARKER in system else _NOT_FOUND}"
+            return f"{opener} {_next_variant(ASK_WHAT_PART, history) if empathetic else _NOT_FOUND}"
 
         parts = [opener]
         if SOLUTION_GUARD_MARKER in system:
