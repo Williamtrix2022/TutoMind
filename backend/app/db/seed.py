@@ -1,5 +1,6 @@
 """Demo data: 1 course, 1 teacher and some students. Idempotent. Run: `python -m app.db.seed`."""
 
+import os
 from datetime import UTC, datetime, timedelta
 
 from sqlalchemy import func, select
@@ -19,7 +20,9 @@ from app.services.moodle import SimulatedMoodleClient
 from app.services.moodle_sync import sync_course
 
 DEMO_COURSE_ID = "demo"  # the frontend uses this id (frontend/src/lib/config.ts)
-DEMO_PASSWORD = "demo12345"  # development only
+# Solo desarrollo. En un sitio público define DEMO_PASSWORD antes de sembrar
+# para no dejar publicada una contraseña conocida.
+DEMO_PASSWORD = os.environ.get("DEMO_PASSWORD") or "demo12345"
 
 TEACHER = ("t1", "Profe Demo", "docente@tutomind.demo", "teacher")
 STUDENTS = [

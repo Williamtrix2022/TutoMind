@@ -46,6 +46,15 @@ class Settings(BaseSettings):
             )
         return self
 
+    @field_validator("database_url")
+    @classmethod
+    def use_the_psycopg_driver(cls, value: str) -> str:
+        """Neon y Render dan `postgres://`/`postgresql://`; SQLAlchemy necesita saber el driver."""
+        for plain in ("postgres://", "postgresql://"):
+            if value.startswith(plain):
+                return "postgresql+psycopg://" + value[len(plain) :]
+        return value
+
     @field_validator("moodle_base_url")
     @classmethod
     def moodle_url_must_be_http(cls, value: str) -> str:

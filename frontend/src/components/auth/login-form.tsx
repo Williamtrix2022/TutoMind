@@ -9,6 +9,7 @@ import { LogoMark } from "@/components/brand/logo-mark";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { useLogin } from "@/lib/api/hooks/use-auth";
 import { spring, tap } from "@/lib/motion";
+import { useAfterDelay, useServerWakeUp } from "@/lib/hooks/use-server-wakeup";
 import { useApp } from "@/lib/providers/app-providers";
 import type { Role } from "@/lib/types";
 
@@ -44,6 +45,8 @@ export function LoginForm() {
   const router = useRouter();
   const { role: demoRole, authStatus, signIn } = useApp();
   const login = useLogin();
+  useServerWakeUp();
+  const waking = useAfterDelay(login.isPending, 4000);
   const ids = { email: useId(), password: useId() };
 
   const [role, setRole] = useState<Role>(demoRole);
@@ -165,6 +168,12 @@ export function LoginForm() {
             {login.isPending && <LoaderCircle className="size-4 animate-spin" aria-hidden />}
             {login.isPending ? "Entrando…" : "Entrar"}
           </motion.button>
+
+          {waking && (
+            <p role="status" className="text-center text-sm text-muted">
+              El servidor estaba dormido y está despertando. Puede tardar hasta un minuto.
+            </p>
+          )}
         </form>
       </motion.div>
     </main>
