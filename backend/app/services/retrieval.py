@@ -33,7 +33,13 @@ GENERIC_TERMS = frozenset(
     # How the student feels or that they did not get it says nothing about the subject:
     "entender entiendo entendi comprender comprendo imposible rindo rendir sigo puedo nada claro "
     "frustrado frustrada cansado cansada harto harta perdido perdida confundido confundida "
-    "gracias".split()
+    "gracias "
+    # Very common Spanish words: they say nothing about what a question is about.
+    "esto eso aquello estos estas esos esas aqui alli ahora siempre nunca tambien porque donde "
+    "quien cual cuales mucho mucha menos todo toda todos todas algo alguien tengo tiene tienen "
+    "tener puede pueden quiero quiere necesito debo hola buenas favor ayudar dime dame explicar "
+    "hecho cosa cosas veces otra otro otras otros mismo misma tanto sino sobre entre hasta desde "
+    "cada solo sola todavia".split()
 )
 
 
