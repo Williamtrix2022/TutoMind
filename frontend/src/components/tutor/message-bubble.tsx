@@ -1,20 +1,20 @@
 "use client";
 
 import { motion } from "motion/react";
-import { FileText, TriangleAlert } from "lucide-react";
+import { FileText, LifeBuoy, TriangleAlert } from "lucide-react";
 import type { ChatMessage, SourceCitation } from "@/lib/hooks/use-tutor-chat";
-import { spring } from "@/lib/motion";
+import { spring, tap } from "@/lib/motion";
 import { Markdown } from "./markdown";
 import { TutorOrb } from "./tutor-orb";
 
 function SourceChip({ source }: { source: SourceCitation }) {
   const label = source.page ? `${source.title} · p. ${source.page}` : source.title;
   const className =
-    "inline-flex max-w-full items-center gap-1.5 rounded-xl border border-line bg-canvas px-2.5 py-1.5 text-xs font-medium text-muted";
+    "inline-flex max-w-full items-center gap-1.5 rounded-full border border-line bg-canvas px-2.5 py-1 text-xs font-medium text-muted";
 
   const content = (
     <>
-      <FileText className="size-3.5 shrink-0 text-primary" aria-hidden />
+      <FileText className="size-3 shrink-0 text-primary" aria-hidden />
       <span className="truncate">{label}</span>
     </>
   );
@@ -51,7 +51,29 @@ function Thinking() {
   );
 }
 
-export function MessageBubble({ message, calm = false }: { message: ChatMessage; calm?: boolean }) {
+/** Respuestas muy cortas (saludos, avisos) no necesitan citar el material. */
+const MIN_CHARS_FOR_SOURCES = 120;
+
+/** Una pill por documento y página: sin repetidos y solo si la respuesta realmente se apoya en el curso. */
+function relevantSources(message: ChatMessage): SourceCitation[] {
+  if (message.streaming || message.error || message.content.length < MIN_CHARS_FOR_SOURCES) return [];
+  const seen = new Set<string>();
+  return message.sources.filter((source) => {
+    const key = `${source.document_id}:${source.page ?? ""}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+interface MessageBubbleProps {
+  message: ChatMessage;
+  calm?: boolean;
+  /** Ofrece, de forma sutil, avisar al docente (solo en la última respuesta). */
+  onRequestHelp?: () => void;
+}
+
+export function MessageBubble({ message, calm = false, onRequestHelp }: MessageBubbleProps) {
   if (message.role === "user") {
     return (
       <motion.div
@@ -67,6 +89,8 @@ export function MessageBubble({ message, calm = false }: { message: ChatMessage;
     );
   }
 
+  const sources = relevantSources(message);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
@@ -77,7 +101,7 @@ export function MessageBubble({ message, calm = false }: { message: ChatMessage;
       <TutorOrb active={message.streaming} calm={calm} className="mt-1 size-8" />
       <div className="min-w-0 flex-1 space-y-3">
         <div
-          className={`rounded-3xl rounded-tl-lg border bg-card px-5 py-4 shadow-card transition-colors duration-700 ${
+          className={`rounded-3xl rounded-tl-lg border bg-card px-5 py-4 leading-relaxed shadow-card transition-colors duration-700 ${
             calm ? "border-glow/50" : "border-line"
           }`}
         >
@@ -91,12 +115,25 @@ export function MessageBubble({ message, calm = false }: { message: ChatMessage;
           )}
         </div>
 
-        {!message.streaming && message.sources.length > 0 && (
-          <div className="flex flex-wrap gap-2" aria-label="Fuentes del curso">
-            {message.sources.map((source) => (
-              <SourceChip key={source.document_id} source={source} />
+        {sources.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 px-1" aria-label="Fuentes del curso">
+            {sources.map((source) => (
+              <SourceChip key={`${source.document_id}:${source.page ?? ""}`} source={source} />
             ))}
           </div>
+        )}
+
+        {onRequestHelp && !message.streaming && !message.error && (
+          <motion.button
+            type="button"
+            onClick={onRequestHelp}
+            whileTap={tap}
+            transition={spring}
+            className="ml-1 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium text-muted transition-colors hover:bg-card hover:text-fg"
+          >
+            <LifeBuoy className="size-3.5" aria-hidden />
+            ¿Sigue sin quedar claro? Pedir ayuda al profesor
+          </motion.button>
         )}
       </div>
     </motion.div>

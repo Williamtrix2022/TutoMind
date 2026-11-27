@@ -140,7 +140,7 @@ html.theme-transition *::after {
 .prose-tutor ul,
 .prose-tutor ol,
 .prose-tutor blockquote {
-  margin: 0.75rem 0;
+  margin: 0.875rem 0;
 }
 .prose-tutor ul {
   list-style: disc;
@@ -155,12 +155,34 @@ html.theme-transition *::after {
 }
 .prose-tutor h1,
 .prose-tutor h2,
-.prose-tutor h3 {
+.prose-tutor h3,
+.prose-tutor h4 {
   margin: 1.25rem 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 650;
+  line-height: 1.4;
+  letter-spacing: -0.005em;
+}
+.prose-tutor h1 {
+  font-size: 1.125rem;
+}
+.prose-tutor h2 {
   font-size: 1.0625rem;
 }
 .prose-tutor strong {
-  font-weight: 700;
+  font-weight: 650;
+}
+.prose-tutor hr {
+  margin: 1.25rem 0;
+  border: 0;
+  border-top: 1px solid var(--color-line);
+}
+.prose-tutor li > ul,
+.prose-tutor li > ol {
+  margin: 0.25rem 0;
+}
+.prose-tutor li::marker {
+  color: var(--color-primary);
 }
 .prose-tutor a {
   color: var(--color-primary);
@@ -169,7 +191,8 @@ html.theme-transition *::after {
 }
 .prose-tutor blockquote {
   border-left: 3px solid var(--color-glow);
-  padding-left: 1rem;
+  border-radius: 0.25rem;
+  padding: 0.125rem 0 0.125rem 1rem;
   color: var(--fg-muted);
 }
 .prose-tutor :not(pre) > code {
