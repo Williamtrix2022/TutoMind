@@ -1,5 +1,6 @@
 # Backend de TutoMind en Render (plan gratuito). Ver docs/DESPLIEGUE.md.
 # Las variables con `sync: false` se escriben a mano en el panel de Render (son secretos o dependen de otros servicios).
+# GEMINI_API_KEY es opcional y no se pide al crear: agrégala después en Environment (sin ella el tutor usa el modo offline).
 services:
   - type: web
     name: tutomind-api
@@ -23,6 +24,4 @@ services:
       - key: DEMO_PASSWORD
         sync: false
       - key: CORS_ORIGINS
-        sync: false
-      - key: GEMINI_API_KEY
         sync: false
