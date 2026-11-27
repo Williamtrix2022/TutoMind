@@ -26,6 +26,11 @@ class Settings(BaseSettings):
     gemini_api_key: str = ""
     llm_model: str = "gemini-2.5-flash"
     embedding_model: str = "gemini-embedding-001"
+    # Relevancia del material con embeddings semánticos de Gemini (distancia coseno: 0 = idéntico).
+    # Primera calibración: un fragmento más lejano que esto, o mucho más lejano que el mejor,
+    # no habla de la pregunta (así una duda de Programación no recibe apuntes de Cálculo).
+    retrieval_max_distance: float = 0.65
+    retrieval_margin: float = 0.12
 
     # Moodle Web Services. Empty = no Moodle: simulated demo data is used (services/moodle.py).
     moodle_base_url: str = ""

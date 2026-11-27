@@ -5,6 +5,7 @@ from app.services.frustration import (
     DETECTION_THRESHOLD,
     assess,
     message_score,
+    says_still_lost,
 )
 
 
@@ -146,3 +147,75 @@ class TestAssess:
         result = assess([], request_human_help=False)
 
         assert result.frustration.score == 0.0 and result.escalation_reason is None
+
+
+class TestRepeatedFailure:
+    """The teacher is offered when the student still does not understand after 2 explanations."""
+
+    def test_still_lost_after_two_explanations_offers_the_teacher(self):
+        messages = [
+            user("¿cómo derivo una función compuesta?"),
+            tutor(),
+            user("sigue sin quedarme claro"),
+            tutor(),
+            user("todavía no lo entiendo"),
+        ]
+
+        result = assess(messages, request_human_help=False)
+
+        assert result.escalation_reason == "repeated_failure"
+
+    def test_not_after_a_single_explanation(self):
+        messages = [user("¿cómo derivo?"), tutor(), user("sigo sin entender")]
+
+        assert assess(messages, request_human_help=False).escalation_reason is None
+
+    def test_a_calm_follow_up_after_two_explanations_does_not_offer_it(self):
+        messages = [
+            user("¿qué es un límite?"),
+            tutor(),
+            user("ok, ¿y un ejemplo?"),
+            tutor(),
+            user("gracias"),
+        ]
+
+        assert assess(messages, request_human_help=False).escalation_reason is None
+
+    @pytest.mark.parametrize(
+        "text",
+        [
+            "sigo sin entender",
+            "Sigo sin comprender esto",
+            "aún no lo entiendo",
+            "todavia no me queda claro",
+            "no me queda claro",
+            "sigo confundida",
+            "sigo perdido",
+        ],
+    )
+    def test_the_ways_of_saying_it_still_did_not_land(self, text):
+        assert says_still_lost(text)
+
+    @pytest.mark.parametrize(
+        "text", ["¿qué es una derivada?", "ya entendí, gracias", "no entendí el paso 2"]
+    )
+    def test_ordinary_messages_are_not_flagged(self, text):
+        assert not says_still_lost(text)
+
+    def test_persistent_frustration_keeps_its_own_reason(self):
+        messages = [
+            user("no entiendo"),
+            tutor(),
+            user("sigo sin entender, esto es imposible"),
+            tutor(),
+            user("me rindo, no puedo más"),
+        ]
+
+        assert (
+            assess(messages, request_human_help=False).escalation_reason == "persistent_frustration"
+        )
+
+    def test_asking_outright_still_wins(self):
+        messages = [user("a"), tutor(), user("b"), tutor(), user("sigo sin entender")]
+
+        assert assess(messages, request_human_help=True).escalation_reason == "student_requested"

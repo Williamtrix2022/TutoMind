@@ -19,7 +19,7 @@ Leyenda de estado: ✅ hecho · 🔄 en curso · ⬜ pendiente · ⛔ bloqueado
 
 TutoMind es una plataforma web educativa (PWA) integrada con **Moodle** que ofrece dos cosas:
 
-1. **Tutor inteligente socrático** basado en los documentos del curso (RAG): guía paso a paso sin regalar la solución, adapta la profundidad al nivel del alumno (básico, intermedio, avanzado), detecta frustración y permite pedir ayuda al docente.
+1. **Tutor inteligente explicativo** basado en los documentos del curso (RAG): explica con claridad, con un ejemplo práctico y una pregunta de verificación, adapta la profundidad al nivel del alumno (básico, intermedio, avanzado), detecta frustración y permite pedir ayuda al docente.
 2. **Dashboard predictivo de riesgo académico con explicabilidad (XAI)**: semáforo verde / amarillo / rojo por estudiante, con los factores exactos que justifican cada nivel, y un «termómetro del aula» con los temas más consultados y alertas de confusión.
 
 **Incluido en el MVP**
@@ -224,6 +224,9 @@ Con el backend encendido, entra con los usuarios demo de arriba.
 | 2026-11-26 | Moodle: ingesta idempotente por correo y datos simulados que se renuevan (no se acumulan) | Permite desarrollar y demostrar sin Moodle, avisando siempre. El cliente real no está probado contra un Moodle real; los eventos simulados llevan `source = 'simulated'` y nunca tocan datos reales. |
 | 2026-11-25 | Indexación con tareas en segundo plano de FastAPI | Sin infraestructura extra para el MVP. Límite conocido: si el servidor se reinicia a mitad, el documento queda en `processing`. |
 | 2026-11-25 | Login real: el `role` del cuerpo solo confirma el de la cuenta; el rol de las rutas se lee de la base de datos | Evita escalar privilegios con un token o un campo manipulado ([#15](https://github.com/Williamtrix2022/TutoMind/issues/15)). Para el demo, usuarios sembrados: `docente@tutomind.demo`, `ana@tutomind.demo`… con `demo12345`. |
+| 2026-11-27 | Tutor explicativo y cercano, no socrático | La demostración mostró que evadir respuestas y repetir plantillas frustra. Ahora cada respuesta valida, explica, da un ejemplo y verifica. Solo ante un trabajo calificado para entregar explica y resuelve un ejemplo análogo. |
+| 2026-11-27 | El docente se ofrece como última instancia y el ticket se crea al confirmar | Solo si el estudiante sigue sin entender tras 2 explicaciones o su frustración persiste. Ofrecer no es escalar: el evento llega sin `ticket_id` y el ticket nace cuando el estudiante acepta. |
+| 2026-11-27 | Relevancia del material por tipo de embedder | Con Gemini: distancia máxima y margen. El embedder offline casi no separa temas por distancia: ahí se exige vocabulario poco común compartido (tipo IDF). Primera calibración; ajustar con datos reales. |
 | 2026-11-26 | Mocks apagados por defecto; la interfaz habla con el backend real | Es la integración (#21). Los mocks siguen disponibles con `NEXT_PUBLIC_USE_MOCKS=true` para trabajar sin backend. |
 | 2026-11-26 | Reintentos solo ante caídas de red y errores 5xx (hasta 2, con espera de 1 s y 2 s) | Un 4xx (credenciales, permisos, no existe) da el mismo resultado al repetirlo. Un servidor apagado se muestra como «No pudimos conectar con el servidor» y no como «Failed to fetch». |
 | 2026-11-26 | IA gratuita: Google Gemini (`gemini-2.5-flash` + `gemini-embedding-001` a 1024 dims) en lugar de la API de Anthropic | El MVP debe costar cero. El nivel gratuito puede usar los datos para mejorar modelos: **solo documentos de demo**. Detrás de `LLMClient` (`backend/app/services/llm.py`) para poder cambiar de proveedor. |
@@ -261,6 +264,10 @@ Con el backend encendido, entra con los usuarios demo de arriba.
 ## 12. Registro de cambios
 
 Más reciente primero.
+
+### 2026-11-27
+- Frontend alineado con el tutor explicativo: la oferta del docente aparece solo cuando el servidor la sugiere y pide confirmación, textos del inicio y del chat, mocks, prueba e2e y diapositivas — [#69](https://github.com/Williamtrix2022/TutoMind/pull/69).
+- Tutor explicativo y cercano en lugar de socrático; modo offline que presenta el material con formato limpio; filtro de relevancia del material (no mezcla materias); el docente se ofrece solo como última instancia y el ticket se crea al confirmar — [#67](https://github.com/Williamtrix2022/TutoMind/pull/67).
 
 ### 2026-11-26
 - README final, [guion de la demostración](GUION_DEMO.md) y diapositivas (10 láminas; el enlace es privado hasta que se comparta desde su menú *Share*) (#28) — [#65](https://github.com/Williamtrix2022/TutoMind/pull/65).
