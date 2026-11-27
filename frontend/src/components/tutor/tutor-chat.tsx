@@ -28,6 +28,11 @@ export function TutorChat({ initialQuestion }: { initialQuestion?: string }) {
   });
   const calm = frustration?.detected === true;
   const helpRequested = Boolean(escalation?.ticket_id);
+  // El banner ya ofrece ayuda si hay frustración o sugerencia; el botón sutil cubre "varios intentos".
+  const bannerShown = !helpRequested && (calm || escalation?.suggested === true);
+  const attempts = messages.filter((m) => m.role === "user").length;
+  const offerInlineHelp = !helpRequested && !bannerShown && !isStreaming && attempts >= 3;
+  const lastId = messages[messages.length - 1]?.id;
 
   // Sigue la respuesta solo si la persona no se ha desplazado hacia arriba.
   const stickToBottom = useRef(true);
@@ -130,7 +135,12 @@ export function TutorChat({ initialQuestion }: { initialQuestion?: string }) {
         ) : (
           <div role="log" aria-live="polite" aria-label="Conversación con el tutor" className="space-y-5">
             {messages.map((message) => (
-              <MessageBubble key={message.id} message={message} calm={calm} />
+              <MessageBubble
+                key={message.id}
+                message={message}
+                calm={calm}
+                onRequestHelp={offerInlineHelp && message.id === lastId ? () => void requestHelp() : undefined}
+              />
             ))}
           </div>
         )}
