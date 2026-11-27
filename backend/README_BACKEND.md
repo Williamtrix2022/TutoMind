@@ -41,7 +41,7 @@ Variables de entorno o archivo `.env` (ver `.env.example`). Hoy:
 | `EMBEDDING_DIMENSIONS` | `1024` | Tamaño de los vectores |
 | `MOODLE_BASE_URL` / `MOODLE_TOKEN` | vacío | Moodle Web Services; sin ellos, datos simulados (ver Moodle) |
 | `GEMINI_API_KEY` | vacío | Clave gratuita de [Google AI Studio](https://aistudio.google.com/apikey). **Sin clave** el backend usa un cliente offline (embeddings léxicos y tutor de prueba) para poder desarrollar y probar |
-| `LLM_MODEL` | `gemini-2.5-flash` | Modelo del tutor |
+| `LLM_MODEL` | `gemini-3.5-flash-lite` | Modelo del tutor (responde en ~1 s; los «flash» normales piensan y tardan 24 s o más; `gemini-2.5-flash` ya no se ofrece a cuentas nuevas) |
 | `EMBEDDING_MODEL` | `gemini-embedding-001` | Modelo de embeddings (se pide a 1024 dimensiones y se normaliza) |
 
 ## Base de datos
