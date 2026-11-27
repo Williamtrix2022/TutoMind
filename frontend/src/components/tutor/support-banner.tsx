@@ -40,7 +40,7 @@ export function SupportBanner({ escalation, disabled, onRequestHelp }: SupportBa
           <div className="space-y-0.5">
             <p className="font-semibold">Listo, tu docente ya tiene tu consulta</p>
             <p className="text-sm text-muted">
-              Solicitud {ticket} registrada: la verá en su panel con nuestra conversación.
+              Solicitud #{ticket.slice(0, 8).toUpperCase()} registrada: la verá en su panel con nuestra conversación.
             </p>
           </div>
         </motion.div>
