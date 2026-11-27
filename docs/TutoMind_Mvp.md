@@ -45,7 +45,7 @@ TutoMind es una plataforma web educativa (PWA) integrada con **Moodle** que ofre
 |---|---|---|
 | **Contrato** (`docs/openapi.json`) | ✅ Listo | Los 5 endpoints definidos, más el `GET` de documentos ([#38](https://github.com/Williamtrix2022/TutoMind/pull/38)). Cambios solo por PR del contrato. |
 | **Frontend** | ✅ Sprint 2 completo | Todas las pantallas (login, tutor, documentos, riesgo, temas e inicios por rol) con carga, vacío y error, y reintentos solo ante fallos de red o 5xx. Habla con el backend real por defecto (`NEXT_PUBLIC_USE_MOCKS=false`). Pruebas end-to-end con Playwright contra el backend real y auditoría de accesibilidad (axe) en 7 pantallas, 2 temas y móvil/escritorio, sin violaciones graves. |
-| **Despliegue** | ✅ En línea | Frontend en https://tutomind.vercel.app, backend en https://tutomind-api.onrender.com y base en Neon (todo gratis). Detalle en [`docs/DESPLIEGUE.md`](DESPLIEGUE.md). Las pruebas end-to-end pasan contra la URL pública. |
+| **Despliegue** | ✅ En línea | Frontend en https://tutomind.vercel.app, backend en https://tutomind-api-9o6i.onrender.com y base en Neon, todo en cuentas propias y gratis. Detalle en [`docs/DESPLIEGUE.md`](DESPLIEGUE.md). Las pruebas end-to-end pasan contra la URL pública. |
 | **Backend** | ✅ Completo | Sprint 1 y Sprint 2 del backend completos (#12–#24): auth, documentos, tutor con RAG/SSE, frustración y tickets, riesgo con XAI, termómetro del aula y Moodle. Todos los endpoints del contrato están implementados. Funciona sin API key y sin Moodle (clientes offline/simulado); el cliente de Moodle real **no está probado contra un Moodle real** y Gemini real tampoco. |
 
 > Todo el flujo (login, documentos, tutor, riesgo y temas) se probó con la interfaz contra el backend real: `cd frontend && npm run e2e` (ver sección 8). Lighthouse sobre la compilación de producción: accesibilidad, buenas prácticas y SEO en 100; rendimiento 100 en escritorio y 70 en móvil (hidratación de React con la CPU simulada 4× más lenta).
@@ -266,6 +266,7 @@ Con el backend encendido, entra con los usuarios demo de arriba.
 Más reciente primero.
 
 ### 2026-11-27
+- Despliegue migrado a cuentas propias: Neon nuevo, Render creado desde `render.yaml` sobre `main` y frontend apuntando al servidor nuevo; pruebas end-to-end 10 de 10 contra el sitio.
 - Ajustes del tutor tras verlo desplegado: el offline no busca material en mensajes frustrados y pregunta qué parte se complica, no cuela documentos por una palabra suelta, no repite la misma respuesta empática y el número de solicitud es corto — [#71](https://github.com/Williamtrix2022/TutoMind/pull/71), [#73](https://github.com/Williamtrix2022/TutoMind/pull/73), [#74](https://github.com/Williamtrix2022/TutoMind/pull/74).
 - Frontend alineado con el tutor explicativo: la oferta del docente aparece solo cuando el servidor la sugiere y pide confirmación, textos del inicio y del chat, mocks, prueba e2e y diapositivas — [#69](https://github.com/Williamtrix2022/TutoMind/pull/69).
 - Tutor explicativo y cercano en lugar de socrático; modo offline que presenta el material con formato limpio; filtro de relevancia del material (no mezcla materias); el docente se ofrece solo como última instancia y el ticket se crea al confirmar — [#67](https://github.com/Williamtrix2022/TutoMind/pull/67).
