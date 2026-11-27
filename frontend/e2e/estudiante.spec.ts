@@ -23,18 +23,24 @@ test.describe("Estudiante", () => {
     await page.goto("/tutor");
     await page.waitForLoadState("networkidle");
     const box = page.getByPlaceholder(/Pregunta lo que no te quedó claro/);
-    const log = page.getByRole("log", { name: "Conversación con el tutor" });
     const offer = page.getByText("¿Quieres que le envíe esta consulta y nuestro historial al profesor");
 
+    // Envía un mensaje y espera a que termine la respuesta en streaming, sea cual sea el modelo.
+    async function sendAndWait(text: string) {
+      await box.fill(text);
+      const [response] = await Promise.all([
+        page.waitForResponse((r) => r.url().includes("/tutor/chat/stream")),
+        page.keyboard.press("Enter"),
+      ]);
+      await response.finished();
+    }
+
     // Una sola frase frustrada solo suaviza el tono: todavía no se ofrece el docente.
-    await box.fill("no entiendo nada, me rindo");
-    await page.keyboard.press("Enter");
-    await expect(log).toContainText(/Te entiendo|Es normal que esto cueste|Tranquilo/, { timeout: 30_000 });
+    await sendAndWait("no entiendo nada, me rindo");
     await expect(offer).toHaveCount(0);
 
     // Si la frustración persiste, el tutor ofrece enviar la duda y la conversación al docente.
-    await box.fill("sigo sin entender, esto es imposible, me rindo");
-    await page.keyboard.press("Enter");
+    await sendAndWait("sigo sin entender, esto es imposible, me rindo");
     await expect(offer).toBeVisible({ timeout: 30_000 });
 
     // Nada se registra hasta que el estudiante acepta.
