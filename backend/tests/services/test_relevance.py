@@ -88,7 +88,7 @@ class TestLexical:
 class TestFeelingsAndSecondaryDocuments:
     BOOK = chunk(
         "libro",
-        "Sin duda un libro sencillo de entender, imposible dejar de agradecer a los autores.",
+        "Sin duda esto es un libro sencillo de entender, imposible no agradecer a sus autores.",
         0.9,
     )
 
