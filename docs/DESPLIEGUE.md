@@ -10,19 +10,21 @@ Tres servicios, todos en plan gratuito:
 
 El orden importa: la base primero, luego el servidor (necesita la URL de la base) y al final la pantalla (necesita la URL del servidor).
 
-## Estado actual (26 nov 2026)
+## Estado actual (27 nov 2026)
 
 | Pieza | Dónde | Dirección |
 |---|---|---|
 | Frontend | Vercel (cuenta `williamtrix2022`) | https://tutomind.vercel.app |
-| Backend | Render, servicio `tutomind-api`, región Virginia | https://tutomind-api.onrender.com (`/health`, `/docs`) |
-| Base de datos | Neon, proyecto `tutomind` (`cool-fire-02965334`), PostgreSQL 17 + pgvector | — |
+| Backend | Render (cuenta propia), servicio `tutomind-api`, región Virginia, creado desde `render.yaml` sobre `main` | https://tutomind-api-9o6i.onrender.com (`/health`, `/docs`) |
+| Base de datos | Neon (cuenta propia), proyecto `tutomind` (`ancient-butterfly-30510610`), PostgreSQL 18 + pgvector | — |
 
 - **Contraseña de las cuentas de demo:** se fijó con `DEMO_PASSWORD` en Render y **no está en el repositorio**. Se entrega en privado.
-- **Backend:** Render sigue la rama `develop` y se redespliega con cada cambio. Al etiquetar `v0.1.0` conviene cambiarlo a `main` (Render → *Settings → Branch*).
+- **Backend:** Render lee `render.yaml` de la rama `main` y se redespliega con cada cambio que llegue a `main`. Las migraciones y la semilla corren en cada arranque.
 - **Frontend:** se publicó desde la carpeta `frontend/` con el CLI de Vercel (el proyecto no está enlazado a GitHub). Para publicar cambios: `cd frontend && npx vercel deploy --prod`. Las variables `NEXT_PUBLIC_API_URL` y `NEXT_PUBLIC_USE_MOCKS` ya están en el proyecto. Si prefieres despliegue automático, conecta el repositorio desde *Settings → Git* del proyecto en Vercel.
 - **Tutor:** sin `GEMINI_API_KEY` usa el cliente offline. Al añadir la clave en Render hay que borrar y volver a subir los documentos.
 - **Servicio creado a mano:** el servicio de Render se creó con comandos que entran a `backend/` (`cd backend && …`) porque la herramienta no permitía fijar el directorio raíz; `render.yaml` es la versión equivalente con `rootDir`.
+
+> **Migración a cuentas propias (27 nov).** El primer despliegue se había creado sin querer en las cuentas de Render y Neon de otra persona. Se recreó todo en las cuentas de Williamtrix2022: proyecto nuevo en Neon, Blueprint en Render y variable `NEXT_PUBLIC_API_URL` de Vercel apuntando al servidor nuevo. Los documentos se volvieron a subir (los tres PDF de ejemplo); lo subido a mano antes hay que cargarlo otra vez. El servicio anterior ya no se usa.
 
 ## 1. Neon (base de datos)
 1. Crea un proyecto y una base (por ejemplo `tutomind`), región cercana al servidor de Render.
