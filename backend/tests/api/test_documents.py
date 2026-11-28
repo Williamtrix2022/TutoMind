@@ -1,10 +1,12 @@
+from datetime import UTC, datetime, timedelta
+
 import pytest
 from pydantic import TypeAdapter
 from sqlalchemy import select
 
 from app.db.models import Course, Document, DocumentChunk, Enrollment
 from app.schemas import DocumentListResponse, DocumentUploadResponse
-from app.services.llm import get_llm_client
+from app.services.llm import LLMError, get_llm_client
 from tests.files import DOCX, PDF, PPTX, make_docx, make_pdf, make_pptx
 
 MAX_BYTES = 20 * 1024 * 1024
@@ -151,6 +153,40 @@ class TestUpload:
         document = listing(api, auth(teacher)).json()["documents"][0]
         assert document["status"] == "failed"
         assert "secret internal detail" not in document["error_message"]
+
+
+class TestProviderLimits:
+    @pytest.mark.parametrize(
+        ("kind", "words"),
+        [("rate_limit", "límite"), ("unavailable", "no respondió")],
+    )
+    def test_a_document_that_fails_because_of_the_ai_service_says_why(
+        self, api, teacher, auth, kind, words
+    ):
+        class Limited:
+            async def embed(self, texts, *, is_query=False):
+                raise LLMError(kind)
+
+        api.app.dependency_overrides[get_llm_client] = lambda: Limited()
+        upload(api, auth(teacher))
+
+        document = listing(api, auth(teacher)).json()["documents"][0]
+        assert document["status"] == "failed"
+        assert words in document["error_message"]
+        assert "Vuelve a subir" in document["error_message"]
+
+    def test_a_stale_document_is_failed_when_the_teacher_lists(self, api, session, teacher, auth):
+        old = Document(
+            id="stuck", course_id="c1", filename="x.pdf", mime_type=PDF, size_bytes=10,
+            status="processing", created_at=datetime.now(UTC) - timedelta(minutes=30),
+        )  # fmt: skip
+        session.add(old)
+        session.flush()
+
+        document = listing(api, auth(teacher)).json()["documents"][0]
+
+        assert document["status"] == "failed"
+        assert "interrumpió" in document["error_message"]
 
 
 class TestAuthorization:

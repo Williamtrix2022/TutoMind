@@ -23,6 +23,7 @@ class SpyLLM:
     def __init__(self, tokens: Sequence[str] = ("Hola ", "mundo"), fail_at: int | None = None):
         self.tokens = list(tokens)
         self.fail_at = fail_at
+        self.fail_with: Exception = RuntimeError("secret provider failure")
         self.calls: list[tuple[str, str | None]] = []
         self._embedder = HashingEmbedder(1024)
 
@@ -35,5 +36,5 @@ class SpyLLM:
         self.calls.append((prompt, system))
         for index, token in enumerate(self.tokens):
             if self.fail_at == index:
-                raise RuntimeError("secret provider failure")
+                raise self.fail_with
             yield token

@@ -13,7 +13,7 @@ from app.db.models import (
 )
 from app.schemas import TutorStreamEvent
 from app.services.embeddings import HashingEmbedder
-from app.services.llm import get_llm_client
+from app.services.llm import LLMError, get_llm_client
 from app.services.retrieval import Relevance
 from app.services.tutor_prompt import (
     EMPATHY_MARKER,
@@ -440,6 +440,38 @@ class TestFailures:
         assert "secret provider failure" not in response.text
         EVENT.validate_python(events[-1])
         assert [m.role for m in session.scalars(select(Message)).all()] == ["user"]
+
+
+class TestProviderLimits:
+    @pytest.mark.parametrize(
+        ("kind", "code", "words"),
+        [
+            ("rate_limit", "llm_rate_limited", "muchas consultas"),
+            ("unavailable", "llm_unavailable", "no responde"),
+        ],
+    )
+    def test_the_student_is_told_what_happened_and_what_to_do(
+        self, api, session, student, auth, spy, kind, code, words
+    ):
+        spy.fail_at = 0
+        spy.fail_with = LLMError(kind)
+
+        response = chat(api, student, auth)
+
+        events = parse_sse(response.text)
+        assert types(events) == ["error"]
+        assert events[0]["code"] == code
+        assert words in events[0]["message"]
+        EVENT.validate_python(events[0])
+        assert [m.role for m in session.scalars(select(Message)).all()] == ["user"]
+
+    def test_an_unknown_failure_stays_generic(self, api, student, auth, spy):
+        spy.fail_at = 0
+        spy.fail_with = LLMError("other")
+
+        events = parse_sse(chat(api, student, auth).text)
+
+        assert events[0]["code"] == "llm_error"
 
 
 class TestAccess:

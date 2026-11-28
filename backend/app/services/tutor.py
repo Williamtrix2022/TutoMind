@@ -30,7 +30,7 @@ from app.schemas import (
     TutorChatRequest,
 )
 from app.services.frustration import Assessment, assess
-from app.services.llm import LLMClient
+from app.services.llm import LLMClient, LLMError
 from app.services.retrieval import Relevance, RetrievedChunk, retrieve_chunks
 from app.services.tickets import open_ticket
 from app.services.topics import topic_for
@@ -49,6 +49,24 @@ HUMAN_HELP_REPLY = (
     "panel. Mientras tanto, si quieres, seguimos con otro ejemplo."
 )
 LLM_ERROR_MESSAGE = "No pude generar la respuesta. Inténtalo de nuevo."
+LLM_FAILURES = {
+    "rate_limit": (
+        "llm_rate_limited",
+        "El tutor está recibiendo muchas consultas ahora mismo. "
+        "Espera un minuto e inténtalo de nuevo.",
+    ),
+    "unavailable": (
+        "llm_unavailable",
+        "El servicio de IA no responde en este momento. Inténtalo de nuevo en unos minutos.",
+    ),
+}
+
+
+def _llm_failure(error: Exception) -> tuple[str, str]:
+    """(code, message) shown to the student: specific when we know what happened."""
+    if isinstance(error, LLMError) and error.kind in LLM_FAILURES:
+        return LLM_FAILURES[error.kind]
+    return "llm_error", LLM_ERROR_MESSAGE
 
 
 @dataclass(frozen=True)
@@ -207,10 +225,11 @@ async def stream_events(
             async for piece in source:
                 pieces.append(piece)
                 yield _frame(TokenEvent(type="token", content=piece))
-    except Exception:
+    except Exception as error:
         # The provider's message may contain keys or internals: log it, never send it.
         logger.exception("Tutor generation failed")
-        yield _frame(ErrorEvent(type="error", code="llm_error", message=LLM_ERROR_MESSAGE))
+        code, message = _llm_failure(error)
+        yield _frame(ErrorEvent(type="error", code=code, message=message))
         return
 
     await run_in_threadpool(_save_reply, session_factory, turn.conversation_id, "".join(pieces))

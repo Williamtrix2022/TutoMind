@@ -117,6 +117,12 @@ Alimenta el riesgo (#22) con actividad real y enlaza las citas del tutor a Moodl
 - **Enlaces:** cada cita del tutor lleva `moodle_url`: el enlace propio del documento (`documents.moodle_url`) o, si no lo tiene, la página del curso en Moodle (solo con `MOODLE_BASE_URL` y un id numérico).
 - **Límites, dichos con franqueza:** el cliente se escribió a partir de las respuestas documentadas de Moodle y se probó contra un Moodle **simulado**; **no se ha probado contra un Moodle real** (revisar los nombres de campo al primer uso). Moodle solo expone el *último* acceso, así que cada ingesta añade como mucho un acceso por estudiante. No hay planificador integrado (usar cron), ni forma todavía de rellenar `documents.moodle_url` desde la API.
 
+## Robustez en producción (plan gratuito)
+- **Reintentos con la IA** (`app/services/llm.py`): ante un fallo transitorio de Gemini (HTTP 429, 500, 502, 503, 504, red o tiempo de espera) se reintenta hasta 2 veces, esperando 1 s y 2 s. Cada lote de embeddings se reintenta por separado. Una vez que el estudiante ya vio el primer fragmento de la respuesta **no se reintenta** (repetiría texto). Un error de petición (4xx) o un bug no se reintenta.
+- **Errores con nombre:** el fallo sale como `LLMError` con `kind` (`rate_limit`, `unavailable`, `other`), que nunca incluye el mensaje del proveedor ni la clave. El tutor responde con un evento `error` específico (`llm_rate_limited`: «recibiendo muchas consultas… espera un minuto»; `llm_unavailable`) y la ingesta deja el documento en `failed` con un motivo que dice qué hacer («Vuelve a subir el documento en unos minutos»).
+- **Documentos atascados:** el archivo se indexa en memoria, así que si el servidor se reinicia a mitad el trabajo se pierde. Por eso: **al arrancar** se marcan como `failed` los documentos `queued`/`processing` de más de 2 minutos (el margen evita pisar a otra instancia viva), y **al listar** los documentos del curso se marcan los de más de 10 minutos. Si el arranque no puede consultar la base de datos, el servidor igualmente arranca.
+- **Límite conocido:** un documento que de verdad tarde más de 10 minutos en indexarse se mostraría como fallido al listar aunque termine después.
+
 ## Errores
 Todo error se devuelve con el formato `ErrorResponse` del contrato: `{ "code", "message", "details"? }`.
 Para fallar desde un endpoint: `raise ApiError(status, "codigo", "Mensaje")` (`app/core/errors.py`).
