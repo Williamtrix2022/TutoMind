@@ -29,7 +29,7 @@ Sprint 1 del backend completo (#12–#18). Orden recomendado: **#22 → #23 → 
 - Endpoint para que el docente vea los **tickets** abiertos (hoy se guardan, pero no hay cómo listarlos).
 
 ## Límites conocidos del Sprint 1
-- Si el servidor se reinicia a mitad de indexar, el documento queda en `processing`.
+- ~~Si el servidor se reinicia a mitad de indexar, el documento queda en `processing`.~~ Resuelto: se marca como fallido al arrancar y al listar (ver «Robustez en producción» en `backend/README_BACKEND.md`).
 - El 413 se decide tras recibir el cuerpo completo (sin corte temprano).
 - El tutor sin API key es un sustituto de reglas; la calidad real exige `GEMINI_API_KEY` (nivel gratuito: usar solo documentos de demo).
 - La detección de frustración es léxica: no entiende ironía; `repeated_failure` no se detecta aún.

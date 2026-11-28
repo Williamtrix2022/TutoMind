@@ -230,6 +230,7 @@ Con el backend encendido, entra con los usuarios demo de arriba.
 | 2026-11-26 | Mocks apagados por defecto; la interfaz habla con el backend real | Es la integración (#21). Los mocks siguen disponibles con `NEXT_PUBLIC_USE_MOCKS=true` para trabajar sin backend. |
 | 2026-11-26 | Reintentos solo ante caídas de red y errores 5xx (hasta 2, con espera de 1 s y 2 s) | Un 4xx (credenciales, permisos, no existe) da el mismo resultado al repetirlo. Un servidor apagado se muestra como «No pudimos conectar con el servidor» y no como «Failed to fetch». |
 | 2026-11-26 | IA gratuita: Google Gemini (`gemini-2.5-flash` + `gemini-embedding-001` a 1024 dims) en lugar de la API de Anthropic | El MVP debe costar cero. El nivel gratuito puede usar los datos para mejorar modelos: **solo documentos de demo**. Detrás de `LLMClient` (`backend/app/services/llm.py`) para poder cambiar de proveedor. |
+| 2026-11-28 | Los documentos `queued`/`processing` abandonados por un reinicio se marcan `failed` (al arrancar tras 2 min y al listar tras 10 min) | El archivo se indexa en memoria y no se conserva: tras un reinicio no se puede reintentar, así que es mejor un fallo claro («vuelve a subirlo») que un «procesando» eterno. |
 
 ---
 
@@ -264,6 +265,9 @@ Con el backend encendido, entra con los usuarios demo de arriba.
 ## 12. Registro de cambios
 
 Más reciente primero.
+
+### 2026-11-28
+- Backend: robustez en producción: reintentos con Gemini, mensajes claros ante el límite de uso y recuperación de documentos atascados tras un reinicio.
 
 ### 2026-11-27
 - Gemini real activo: clave nueva válida y modelo `gemini-3.5-flash-lite` por defecto (el 2.5 ya no está disponible para cuentas nuevas y los flash normales tardan 24 s o más) — [#82](https://github.com/Williamtrix2022/TutoMind/pull/82).

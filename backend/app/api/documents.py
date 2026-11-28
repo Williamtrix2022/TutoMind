@@ -12,7 +12,7 @@ from app.db.models import Document, User
 from app.db.session import SessionFactory, get_session, get_session_factory
 from app.schemas import CourseDocument, DocumentListResponse, DocumentUploadResponse, ErrorResponse
 from app.schemas.documents import DOCX_MIME, PDF_MIME, PPTX_MIME
-from app.services.ingestion import ingest_document
+from app.services.ingestion import STALE_AFTER, fail_stale_documents, ingest_document
 from app.services.llm import LLMClient, get_llm_client
 
 router = APIRouter(prefix="/api/v1/courses", tags=["documents"])
@@ -133,6 +133,9 @@ def list_documents(
     session: Session = Depends(get_session),
 ) -> DocumentListResponse:
     course_for_teacher(session, user, course_id)
+    # A job lost to a restart would show "processing" forever: turn it into a clear failure.
+    if fail_stale_documents(session, datetime.now(UTC), STALE_AFTER, course_id):
+        session.commit()
     rows = session.scalars(
         select(Document).where(Document.course_id == course_id).order_by(Document.created_at.desc())
     ).all()
